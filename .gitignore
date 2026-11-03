@@ -6,6 +6,7 @@ npm-debug.log*
 # Dependency and package-manager directories
 node_modules/
 .npm
+.vite/
 
 # Build and package outputs
 *.tsbuildinfo
