@@ -1,4 +1,4 @@
-# 🐝 Bee's Garden
+# 🐝 Bumblebee's Garden
 
 An interactive portfolio. Hover a flower and it blooms. Click it and the bee rushes over,
 and a wooden sign tells you about the project.
