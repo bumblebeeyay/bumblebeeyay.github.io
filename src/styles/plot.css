@@ -1,0 +1,122 @@
+/* A plot: plant label + flower. The whole plot is one button. */
+.plot {
+  all: unset;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  padding: 0 14px;
+  border-radius: 18px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.plot:focus-visible {
+  outline: 3px dashed var(--cream);
+  outline-offset: 6px;
+}
+
+.plot__grass {
+  left: -6px;
+  right: -6px;
+  height: 46px;
+}
+
+/* ---------- botanical plant label ---------- */
+
+.plant-label {
+  position: relative;
+  width: 158px;
+  height: 150px;
+  perspective: 500px;
+}
+
+/* Tilted back like a real label, so it reads from above. */
+.plant-label__plate {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 9px 12px 10px;
+  border: 1px solid var(--kraft-edge);
+  border-radius: 3px;
+  background:
+    radial-gradient(circle, rgb(255 255 255 / 14%) 0 1px, transparent 1.5px) 0 0 / 6px 6px,
+    radial-gradient(circle, rgb(80 50 20 / 12%) 0 1px, transparent 1.5px) 3px 3px / 9px 9px,
+    repeating-linear-gradient(0deg, transparent 0 3px, rgb(0 0 0 / 4%) 3px 4px),
+    linear-gradient(170deg, var(--kraft-light), var(--kraft));
+  box-shadow:
+    0 3px 0 var(--kraft-edge),
+    0 12px 12px -6px rgb(0 0 0 / 35%);
+  transform: rotateX(16deg);
+  transform-origin: 50% 100%;
+  color: var(--engraving);
+  text-align: left;
+  /* engraved look */
+  text-shadow: 0 1px 0 rgb(255 255 255 / 30%);
+  transition: transform 0.4s var(--ease-spring);
+}
+
+/* The nail holding the plate on its stake. */
+.plant-label__plate::after {
+  content: '';
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #c9b79a, #5c4a35 70%);
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 25%);
+}
+
+.plot:hover .plant-label__plate,
+.plot:focus-visible .plant-label__plate {
+  transform: rotateX(8deg) translateY(-3px);
+}
+
+.plant-label__title {
+  margin-bottom: 2px;
+  font-size: 1.02rem;
+  font-style: italic;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.plant-label__line {
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.plant-label__stake {
+  position: absolute;
+  top: 60px;
+  bottom: 0;
+  left: 50%;
+  width: 9px;
+  translate: -50% 0;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #4e2f14, #7a4f2a 50%, #4e2f14);
+}
+
+@media (width <= 720px) {
+  .plot {
+    padding: 0 6px;
+  }
+
+  .plant-label {
+    width: 132px;
+    height: 128px;
+  }
+
+  .plant-label__title {
+    font-size: 0.9rem;
+  }
+
+  .plant-label__line {
+    font-size: 0.7rem;
+  }
+}

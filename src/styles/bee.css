@@ -1,0 +1,65 @@
+.bee {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 100;
+  width: 52px;
+  height: 46px;
+  pointer-events: none;
+  filter: drop-shadow(0 6px 3px rgb(0 0 0 / 18%));
+  will-change: transform;
+}
+
+.bee svg {
+  display: block;
+  overflow: visible;
+}
+
+.bee__body {
+  fill: #f6c343;
+  stroke: #2b1d0e;
+  stroke-width: 3;
+}
+
+.bee__stripe {
+  fill: none;
+  stroke: #2b1d0e;
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.bee__ink {
+  fill: #2b1d0e;
+}
+
+.bee__cheek {
+  fill: #ff8fb8;
+  opacity: 0.8;
+}
+
+.bee__antennae {
+  fill: none;
+  stroke: #2b1d0e;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.bee__wing {
+  fill: #e6f6ff;
+  stroke: #2b1d0e;
+  stroke-width: 2.5;
+  opacity: 0.9;
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: flap 0.09s ease-in-out infinite alternate;
+}
+
+.bee__wing--back {
+  animation-delay: 0.045s;
+}
+
+@keyframes flap {
+  to {
+    transform: scaleY(0.45);
+  }
+}

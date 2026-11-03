@@ -1,0 +1,82 @@
+/*
+ * Flowers are closed by default and bloom on hover, keyboard focus,
+ * or when `.is-bloomed` is set from code (click, touch).
+ * Colors come from --petal, --outline and --core, set per flower.
+ */
+.flower {
+  display: block;
+  width: 110px;
+  height: 190px;
+  overflow: visible;
+}
+
+.flower__stalk {
+  fill: none;
+  stroke: #3a8c3d;
+  stroke-width: 5;
+  stroke-linecap: round;
+}
+
+.flower__leaf,
+.flower__sepal {
+  fill: #2f8f5a;
+}
+
+.flower__bud-petal,
+.flower__petal {
+  fill: var(--petal);
+  stroke: var(--outline);
+  stroke-width: 2;
+}
+
+.flower__core {
+  fill: var(--core);
+  stroke: #d99a1e;
+  stroke-width: 2;
+}
+
+.flower__anchor {
+  fill: none;
+}
+
+/* closed */
+.flower__bud {
+  transform: rotate(8deg);
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transition:
+    transform 0.3s,
+    opacity 0.25s;
+}
+
+.flower__petal {
+  transform: scale(0.06);
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  transition: transform 0.55s var(--ease-spring);
+  transition-delay: calc(var(--petal-index) * 30ms);
+}
+
+.flower__core {
+  transform: scale(0);
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 0.45s 0.12s var(--ease-spring);
+}
+
+/* open */
+:is(.plot:hover, .plot:focus-visible, .flower.is-bloomed) .flower__bud {
+  transform: scale(0.5);
+  opacity: 0;
+}
+
+:is(.plot:hover, .plot:focus-visible, .flower.is-bloomed) :is(.flower__petal, .flower__core) {
+  transform: none;
+}
+
+@media (width <= 720px) {
+  .flower {
+    width: 92px;
+    height: 159px;
+  }
+}
