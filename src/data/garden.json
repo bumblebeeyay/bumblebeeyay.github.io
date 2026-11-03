@@ -1,0 +1,84 @@
+{
+  "welcome": {
+    "kicker": "Welcome to",
+    "title": "Bee's Garden",
+    "subtitle": "Please enjoy a nice, pleasant stroll",
+    "hint": "stroll down · click a flower to visit a project"
+  },
+  "areas": [
+    {
+      "id": "public",
+      "title": "Public projects",
+      "projects": [
+        {
+          "id": "bees-garden",
+          "title": "Bee's Garden",
+          "summary": "Interactive portfolio",
+          "description": "This very portfolio! A garden you stroll through with a bee. Every flower is a project. Built with Vite and TypeScript, drawn in SVG, no framework.",
+          "links": [{ "label": "View code", "href": "https://github.com/bumblebeeyay" }],
+          "flower": { "shape": "daisy", "petal": "#8f6ad8", "outline": "#6a47b3", "core": "#f7c948" }
+        },
+        {
+          "id": "public-2",
+          "title": "Project title",
+          "summary": "One-line summary",
+          "description": "Short description: what it does, what you built, what you learned. (placeholder)",
+          "links": [
+            { "label": "View code", "href": "#" },
+            { "label": "Live demo", "href": "#" }
+          ],
+          "flower": { "shape": "cosmos", "petal": "#ef5a6f", "outline": "#c63d52", "core": "#f7c948" }
+        },
+        {
+          "id": "public-3",
+          "title": "Project title",
+          "summary": "One-line summary",
+          "description": "Short description: what it does, what you built, what you learned. (placeholder)",
+          "links": [{ "label": "View code", "href": "#" }],
+          "flower": { "shape": "lotus", "petal": "#ff95bd", "outline": "#e06a98", "core": "#ffd66b" }
+        }
+      ]
+    },
+    {
+      "id": "private",
+      "title": "Private projects",
+      "projects": [
+        {
+          "id": "private-1",
+          "title": "Project title",
+          "summary": "One-line summary",
+          "description": "Short description of a private or work project: the problem, and your part in it. (placeholder)",
+          "flower": { "shape": "tulip", "petal": "#ffb347", "outline": "#e08a1e", "core": "#ffe08a" }
+        },
+        {
+          "id": "private-2",
+          "title": "Project title",
+          "summary": "One-line summary",
+          "description": "Short description of a private or work project: the problem, and your part in it. (placeholder)",
+          "flower": { "shape": "daisy", "petal": "#ffffff", "outline": "#c9c2b0", "core": "#f7c948" }
+        }
+      ]
+    },
+    {
+      "id": "other",
+      "title": "Other",
+      "projects": [
+        {
+          "id": "other-1",
+          "title": "Something else",
+          "summary": "One-line summary",
+          "description": "Teaching, talks, drawings, side quests… anything that isn't a code project. (placeholder)",
+          "flower": { "shape": "cosmos", "petal": "#5fb7f0", "outline": "#3a8fcb", "core": "#fff1a8" }
+        },
+        {
+          "id": "other-2",
+          "title": "Something else",
+          "summary": "One-line summary",
+          "description": "Teaching, talks, drawings, side quests… anything that isn't a code project. (placeholder)",
+          "flower": { "shape": "tulip", "petal": "#d94f8a", "outline": "#b03068", "core": "#ffd66b" }
+        }
+      ]
+    }
+  ],
+  "footer": "made with 🍯 by Bumblebee"
+}

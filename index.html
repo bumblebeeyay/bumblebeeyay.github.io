@@ -1,77 +1,30 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>My Portfolio</title>
-  <meta name="description" content="My portfolio of works and projects.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐝</text></svg>">
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <main>
-    <header class="hero">
-      <!-- little bee -->
-      <svg class="bee" viewBox="0 0 100 100" aria-hidden="true">
-        <g class="wing">
-          <ellipse cx="38" cy="30" rx="14" ry="18" fill="#dff3ff" stroke="#3b2f1e" stroke-width="3" opacity=".9"/>
-          <ellipse cx="60" cy="28" rx="13" ry="17" fill="#dff3ff" stroke="#3b2f1e" stroke-width="3" opacity=".9"/>
-        </g>
-        <ellipse cx="50" cy="60" rx="30" ry="24" fill="#f6b93b" stroke="#3b2f1e" stroke-width="3"/>
-        <path d="M40 38 Q36 60 40 82" stroke="#3b2f1e" stroke-width="7" fill="none" stroke-linecap="round"/>
-        <path d="M56 37 Q52 60 56 83" stroke="#3b2f1e" stroke-width="7" fill="none" stroke-linecap="round"/>
-        <circle cx="72" cy="54" r="3.5" fill="#3b2f1e"/>
-        <circle cx="74" cy="64" r="3.5" fill="#ff9ec7" opacity=".8"/>
-        <path d="M20 60 L12 62 L20 64" fill="#3b2f1e"/>
-      </svg>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bee's Garden</title>
+    <meta name="description" content="A little garden of projects. Follow the bee, visit the flowers." />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,600&display=swap"
+    />
+  </head>
+  <body>
+    <!-- Rough, hand-cut edges for the wooden boards. -->
+    <svg class="visually-hidden" aria-hidden="true">
+      <filter id="rough-edge">
+        <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="3" seed="4" />
+        <feDisplacementMap in="SourceGraphic" scale="9" />
+      </filter>
+    </svg>
 
-      <h1>My <span>portfolio</span></h1>
-      <p class="tagline">Hi! ✿ welcome to my little garden of projects</p>
+    <div id="app"></div>
+    <noscript>The garden needs JavaScript to grow. 🌱</noscript>
 
-      <nav>
-        <a class="pill honey" href="#projects">Works &amp; Projects</a>
-        <a class="pill" href="#about">About</a>
-        <a class="pill" href="#contact">Contact</a>
-      </nav>
-    </header>
-
-    <section id="about">
-      <h2>🌼 About me</h2>
-      <div class="card">
-        <p style="margin:0">
-          Computer engineering student who loves building things for the web.
-          More about me soon!
-        </p>
-      </div>
-    </section>
-
-    <section id="projects">
-      <h2>🌷 Works &amp; Projects</h2>
-      <div class="wip-banner">
-        <span>🚧</span>
-        <span>The bees are still busy here. Projects coming soon!</span>
-        <span class="tag">WIP</span>
-      </div>
-      <div class="grid">
-        <div class="card project"><div class="flower">🌸</div><div class="name">Project #1</div><div class="soon">buzzing soon…</div></div>
-        <div class="card project"><div class="flower">🌻</div><div class="name">Project #2</div><div class="soon">buzzing soon…</div></div>
-        <div class="card project"><div class="flower">🌷</div><div class="name">Project #3</div><div class="soon">buzzing soon…</div></div>
-        <div class="card project"><div class="flower">🌼</div><div class="name">Project #4</div><div class="soon">buzzing soon…</div></div>
-      </div>
-    </section>
-
-    <section id="contact">
-      <h2>💌 Contact</h2>
-      <div class="card contact-links">
-        <a class="pill" href="https://github.com/bumblebeeyay" target="_blank" rel="noopener">GitHub</a>
-      </div>
-    </section>
-
-    <footer>made with 🍯 by bumblebeeyay · <span id="y"></span></footer>
-  </main>
-  <script>document.getElementById("y").textContent = new Date().getFullYear();</script>
-</body>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
 </html>
