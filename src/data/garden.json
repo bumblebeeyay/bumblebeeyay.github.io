@@ -24,7 +24,7 @@
           "summary": "For easy character sheets",
           "description": "A small tool that lets you create campaigns and character players, and easily update them live during your sessions. Supports original and homebrew content. (WIP)",
           "links": [
-            { "label": "View code", "href": "https://bumblebeeyay.github.io/dnd" }
+            { "label": "Try it out", "href": "https://bumblebeeyay.github.io/dnd" }
           ],
           "flower": { "shape": "cosmos", "petal": "#ef5a6f", "outline": "#c63d52", "core": "#f7c948" }
         },
