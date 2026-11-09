@@ -19,13 +19,12 @@
           "flower": { "shape": "daisy", "petal": "#8f6ad8", "outline": "#6a47b3", "core": "#f7c948" }
         },
         {
-          "id": "public-2",
-          "title": "Project title",
-          "summary": "One-line summary",
-          "description": "Short description: what it does, what you built, what you learned. (placeholder)",
+          "id": "dnd",
+          "title": "DND tool",
+          "summary": "For easy character sheets",
+          "description": "A small tool that lets you create campaigns and character players, and easily update them live during your sessions. Supports original and homebrew content. (WIP)",
           "links": [
-            { "label": "View code", "href": "#" },
-            { "label": "Live demo", "href": "#" }
+            { "label": "View code", "href": "https://bumblebeeyay.github.io/dnd" }
           ],
           "flower": { "shape": "cosmos", "petal": "#ef5a6f", "outline": "#c63d52", "core": "#f7c948" }
         },
