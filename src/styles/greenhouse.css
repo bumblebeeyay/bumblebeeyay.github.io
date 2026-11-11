@@ -1,0 +1,88 @@
+/*
+ * A greenhouse built around its plots: a pitched glass wall of fogged panes in front.
+ * The glass lets clicks through to the plots; GreenhouseFog wipes panes clear.
+ * Mullions are drawn around each pane (not as a background), so the plots show through the fog.
+ */
+.greenhouse {
+  --roof: clamp(110px, 16dvh, 150px);
+  --mullion: 7px;
+
+  position: relative;
+  flex: none;
+  padding: var(--roof) clamp(28px, 4vw, 52px) 0;
+}
+
+.greenhouse__plots {
+  display: flex;
+  align-items: flex-end;
+  gap: clamp(20px, 3vw, 40px);
+}
+
+.greenhouse__glass {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--columns), 1fr);
+  grid-template-rows: var(--roof) 1fr 1fr;
+  gap: var(--mullion);
+  padding: calc(var(--mullion) / 2);
+  clip-path: polygon(0 var(--roof), 50% 0, 100% var(--roof), 100% 100%, 0 100%);
+  pointer-events: none;
+}
+
+.greenhouse__pane {
+  background: var(--fog);
+  box-shadow: 0 0 0 calc(var(--mullion) / 2 + 0.5px) var(--frame);
+  transition:
+    background-color 0.9s,
+    box-shadow 0.6s;
+}
+
+.greenhouse__pane.is-wiped {
+  background: var(--glass-clear);
+}
+
+/* The sloped roof beams, which the panes' own frames cannot draw. */
+.greenhouse__roof {
+  position: absolute;
+  inset: 0 0 auto;
+  height: calc(var(--roof) + var(--mullion) * 1.5);
+  background: var(--frame);
+  clip-path: polygon(
+    0 var(--roof),
+    50% 0,
+    100% var(--roof),
+    100% 100%,
+    50% calc(var(--mullion) * 1.5),
+    0 100%
+  );
+  pointer-events: none;
+  transition: background-color 0.6s;
+}
+
+.greenhouse__sign {
+  position: absolute;
+  top: calc(var(--roof) * 0.45);
+  left: 50%;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  translate: -50% 0;
+  font-size: 14px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.greenhouse__footing {
+  position: absolute;
+  inset: auto -12px -26px;
+  height: 22px;
+  border: 2.5px solid #7d6a4f;
+  border-radius: 4px;
+  background: #b9a68a;
+}
+
+:root[data-theme="night"] .greenhouse__footing {
+  filter: brightness(0.6);
+}

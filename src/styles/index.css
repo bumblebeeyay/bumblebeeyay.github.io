@@ -1,11 +1,13 @@
-/* Order matters: tokens first, then base, shared materials, then components. */
-@import './tokens.css';
-@import './base.css';
-@import './materials.css';
-@import './grass.css';
-@import './welcome.css';
-@import './fence.css';
-@import './plot.css';
-@import './flower.css';
-@import './project-dialog.css';
-@import './bee.css';
+/* Order matters: tokens first, then base, then components. */
+@import "./tokens.css";
+@import "./base.css";
+@import "./scene.css";
+@import "./hive.css";
+@import "./area.css";
+@import "./greenhouse.css";
+@import "./plot.css";
+@import "./flower.css";
+@import "./chrome.css";
+@import "./herbarium.css";
+@import "./list.css";
+@import "./bee.css";

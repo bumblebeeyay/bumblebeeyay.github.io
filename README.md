@@ -1,7 +1,10 @@
 # 🐝 Bumblebee's Garden
 
-An interactive portfolio. Hover a flower and it blooms. Click it and the bee rushes over,
-and a wooden sign tells you about the project.
+An interactive portfolio. Stroll sideways from the hive through a public meadow, a private
+greenhouse and a wild corner. Hover a flower and it blooms. Click it and the bee rushes over,
+and a herbarium sheet tells you about the project. Visited flowers stay open and fill the honey
+jar. After 21:00 (visitor's clock) the garden goes to sleep. "List view" shows everything as a
+plain list.
 
 Vite + TypeScript (strict). No framework: the scene is drawn with SVG and CSS.
 
@@ -26,10 +29,22 @@ Edit `src/data/garden.json`. No code changes needed.
   "title": "My project",
   "summary": "One line, like a plant's common name",
   "description": "What it is, what I built, what I learned.",
+  "tags": ["TypeScript", "Vite"],
   "links": [{ "label": "View code", "href": "https://github.com/…" }],
-  "flower": { "shape": "cosmos", "petal": "#ef5a6f", "outline": "#c63d52", "core": "#f7c948" }
+  "flower": {
+    "shape": "cosmos",
+    "petal": "#ef5a6f",
+    "outline": "#c63d52",
+    "core": "#f7c948"
+  }
 }
 ```
+
+`tags` and `links` are optional. Links become seed packets on the project page.
+
+Each area has a `setting` that decides how it is drawn: `meadow`, `greenhouse` (fogged glass
+the visitor wipes clear) or `wild`. Its `tagline` goes on the signpost, and an optional `note`
+on a small hanging sign.
 
 The content is checked when the page loads. A mistake gives a clear error such as
 `garden.json › areas[0].projects[2].flower.shape: expected one of daisy, cosmos, lotus, tulip`.
@@ -46,9 +61,11 @@ src/
 ├── flower/              petal shapes registry + flower SVG renderer
 ├── bee/                 Bee entity + interchangeable flight behaviours
 ├── input/               pointer tracking
+├── world/               horizontal scrolling (wheel, drag, keys) and the parallax position
 ├── views/               pure render functions: content in, DOM out
-├── garden/              interaction: camera zoom, project dialog, visit flow
-└── styles/              one stylesheet per component, shared tokens and materials
+├── garden/              interaction: visit flow, camera, herbarium and list dialogs,
+│                        greenhouse fog, night mode, visited flowers
+└── styles/              one stylesheet per component; day/night colors in tokens.css
 ```
 
 Some choices:
@@ -66,7 +83,11 @@ Some choices:
   `javascript:` URLs.
 - **Motion is frame-rate independent.** Easing is exponential and scaled by the frame time,
   so the bee feels the same at 60 Hz and 144 Hz. This is covered by tests.
+- **Parallax in CSS.** `WorldScroller` publishes the scroll position once per frame as
+  `--scroll-x`; each layer (hills, clouds, grass) moves its mask by its own factor.
+  Night mode only swaps color tokens.
 - **Accessibility.** Plots are real buttons (keyboard focus also makes a flower bloom). The
   project view is a `<dialog>`, and the garden behind it is made `inert`. Escape closes it,
-  and focus goes back to the flower. `prefers-reduced-motion` is respected. On touch screens,
-  flowers bloom when they scroll into view.
+  ←/→ flip sheets, and focus goes back to the flower. Arrow keys, Page Up/Down, Home and End
+  walk the garden. `prefers-reduced-motion` is respected. On touch screens, flowers bloom
+  when they scroll into view. Visits are kept in `localStorage` when it is available.

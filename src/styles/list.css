@@ -1,0 +1,117 @@
+/* The list view: every project on one plain sheet of paper. */
+.list-dialog {
+  width: min(760px, calc(100% - 32px));
+  max-height: calc(100dvh - 48px);
+  padding: clamp(20px, 4vw, 40px);
+  border: 1px solid var(--paper-edge);
+  border-radius: 6px;
+  background: var(--paper);
+  box-shadow: 0 24px 50px rgb(0 0 0 / 35%);
+  color: var(--engraving);
+}
+
+.list-dialog::backdrop {
+  background: rgb(20 30 15 / 55%);
+}
+
+.list-dialog__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.list-dialog__title {
+  margin: 0;
+  font-size: clamp(28px, 4vw, 40px);
+  font-style: italic;
+  font-weight: 600;
+}
+
+.list-dialog__close {
+  --ink: var(--engraving);
+  --pill-bg: #fff8e6;
+  --pill-border: #7a4a22;
+}
+
+.list-dialog__area h3 {
+  margin: 28px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--paper-edge);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #1d6b3f;
+}
+
+.list-dialog__area h3 span {
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #5e4a33;
+}
+
+.list-dialog__area ul {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.list-dialog__project {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  gap: 12px;
+}
+
+.list-dialog__dot {
+  width: 18px;
+  height: 18px;
+  margin-top: 4px;
+  border: 3px solid;
+  border-radius: 50%;
+}
+
+.list-dialog__project p {
+  margin: 0;
+}
+
+.list-dialog__name {
+  font-size: 18px;
+}
+
+.list-dialog__description {
+  margin: 4px 0 8px !important;
+  line-height: 1.5;
+  color: #4a3a28;
+}
+
+.list-dialog__links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  font-weight: 600;
+}
+
+.list-dialog__links a {
+  color: #1d6b3f;
+  text-underline-offset: 3px;
+}
+
+.list-dialog__show {
+  min-height: 32px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #8a4b10;
+  font-weight: 600;
+  text-decoration: underline dashed;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}

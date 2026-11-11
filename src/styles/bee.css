@@ -63,3 +63,44 @@
     transform: scaleY(0.45);
   }
 }
+
+/* At night the bee carries a lantern. */
+.bee__lantern {
+  display: none;
+}
+
+.bee__lantern-string,
+.bee__lantern-cap {
+  fill: none;
+  stroke: #2b1d0e;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.bee__lantern-glass {
+  fill: #ffe28a;
+  stroke: #2b1d0e;
+  stroke-width: 2;
+}
+
+:root[data-theme="night"] .bee__lantern {
+  display: inline;
+}
+
+.bee::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 360px;
+  height: 360px;
+  margin: -150px 0 0 -180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgb(255 215 106 / 26%), transparent 65%);
+  opacity: 0;
+  transition: opacity 0.8s;
+}
+
+:root[data-theme="night"] .bee::before {
+  opacity: 1;
+}

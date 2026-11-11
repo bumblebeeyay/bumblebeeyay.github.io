@@ -1,6 +1,6 @@
-import { approach, clamp } from '../core/math';
-import { distance, sub, type Vec2 } from '../core/vec2';
-import { FlyTo, type BeeBehaviour } from './behaviours';
+import { approach, clamp } from "../core/math";
+import { distance, sub, type Vec2 } from "../core/vec2";
+import { FlyTo, type BeeBehaviour } from "./behaviours";
 
 /** How close counts as "arrived", in pixels. */
 const ARRIVAL_RADIUS = 12;
@@ -61,20 +61,26 @@ export class Bee {
     if (Math.abs(velocity.x) > 0.25) this.#facing = velocity.x < 0 ? -1 : 1;
     this.#render(velocity, timeMs);
 
-    if (this.#arrival && distance(this.#position, this.#arrival.destination) < ARRIVAL_RADIUS) {
+    if (
+      this.#arrival &&
+      distance(this.#position, this.#arrival.destination) < ARRIVAL_RADIUS
+    ) {
       this.#settleArrival();
     }
   }
 
   #render(velocity: Vec2, timeMs: number): void {
-    const tilt = clamp(velocity.x * 2.2 + velocity.y * 0.6, -MAX_TILT_DEG, MAX_TILT_DEG);
+    const tilt = clamp(
+      velocity.x * 2.2 + velocity.y * 0.6,
+      -MAX_TILT_DEG,
+      MAX_TILT_DEG,
+    );
     const bob = this.#behaviour.bobs
       ? Math.sin((timeMs / BOB_PERIOD_MS) * Math.PI * 2) * BOB_AMPLITUDE_PX
       : 0;
     const x = this.#position.x - this.#halfSize.x;
     const y = this.#position.y - this.#halfSize.y + bob;
-    this.element.style.transform =
-      `translate(${x}px, ${y}px) scaleX(${this.#facing}) rotate(${tilt * this.#facing}deg)`;
+    this.element.style.transform = `translate(${x}px, ${y}px) scaleX(${this.#facing}) rotate(${tilt * this.#facing}deg)`;
   }
 
   #settleArrival(): void {

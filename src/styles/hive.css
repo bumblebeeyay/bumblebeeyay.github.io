@@ -1,0 +1,154 @@
+.hive {
+  position: relative;
+  flex: none;
+  width: 100vw;
+  min-width: 320px;
+  height: 100%;
+}
+
+.hive__welcome {
+  position: absolute;
+  top: calc(var(--topbar-height) + 9dvh);
+  left: 44%;
+  width: min(680px, 52vw);
+}
+
+.hive__kicker {
+  margin: 0;
+  font-size: clamp(30px, min(4vw, 6dvh), 56px);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.hive__title {
+  margin: 6px 0 18px;
+  font-size: clamp(52px, min(7.4vw, 11dvh), 104px);
+  font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: var(--title);
+  transition: color 0.6s;
+}
+
+.hive__subtitle {
+  max-width: 34ch;
+  margin: 0 0 28px;
+  font-size: clamp(17px, 1.6vw, 22px);
+  line-height: 1.45;
+}
+
+.hive__hint {
+  margin: 16px 0 0;
+  font-family: var(--hand);
+  font-size: clamp(21px, 1.9vw, 26px);
+  color: var(--ink-soft);
+}
+
+.honey-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 0 26px;
+  border: 3px solid var(--engraving);
+  border-radius: 16px;
+  background: var(--honey);
+  box-shadow: 0 5px 0 var(--engraving);
+  color: var(--engraving);
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+
+.honey-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 var(--engraving);
+}
+
+.honey-button:active {
+  transform: translateY(4px);
+  box-shadow: 0 1px 0 var(--engraving);
+}
+
+.honey-button .icon {
+  transition: transform 0.2s;
+}
+
+.honey-button:hover .icon {
+  transform: translateX(4px);
+}
+
+/* the skep on its stool, standing on the ground */
+.skep {
+  position: absolute;
+  bottom: calc(var(--ground) - 8px);
+  left: 9%;
+  width: clamp(150px, 17vw, 250px);
+  overflow: visible;
+}
+
+.skep__stool rect {
+  fill: #9a6535;
+  stroke: var(--wood-edge);
+  stroke-width: 3;
+}
+
+.skep__straw ellipse {
+  fill: var(--straw);
+  stroke: var(--straw-edge);
+  stroke-width: 3;
+}
+
+.skep__door {
+  fill: #3b2412;
+}
+
+:root[data-theme="night"] .skep {
+  filter: brightness(0.7) saturate(0.8);
+}
+
+.hive__trail {
+  position: absolute;
+  bottom: calc(var(--ground) + clamp(110px, 15vw, 200px));
+  left: 17%;
+  width: 28vw;
+  height: 30dvh;
+  overflow: visible;
+}
+
+.hive__trail path {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 1 12;
+  opacity: 0.5;
+  vector-effect: non-scaling-stroke;
+}
+
+@media (width <= 900px) {
+  .hive__welcome {
+    left: 16px;
+    right: 16px;
+    width: auto;
+  }
+
+  .hive__trail {
+    display: none;
+  }
+
+  .skep {
+    left: auto;
+    right: 6%;
+  }
+}
+
+@media (width <= 900px) and (height <= 760px) {
+  .skep {
+    display: none;
+  }
+}

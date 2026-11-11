@@ -1,4 +1,4 @@
-import { vec2, type Vec2 } from '../core/vec2';
+import { vec2, type Vec2 } from "../core/vec2";
 
 /** Anything that knows where the pointer is. `null` until the pointer has moved. */
 export interface PointerSource {
@@ -10,8 +10,8 @@ export class PointerTracker implements PointerSource {
   #position: Vec2 | null = null;
 
   constructor(target: Window = window) {
-    target.addEventListener('pointermove', this.#update, { passive: true });
-    target.addEventListener('pointerdown', this.#update, { passive: true });
+    target.addEventListener("pointermove", this.#update, { passive: true });
+    target.addEventListener("pointerdown", this.#update, { passive: true });
   }
 
   get position(): Vec2 | null {

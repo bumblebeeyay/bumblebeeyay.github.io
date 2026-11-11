@@ -1,0 +1,233 @@
+/* The page's own controls, floating over the world: top bar and garden map. */
+
+.topbar {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: var(--topbar-height);
+  padding: 0 clamp(16px, 3vw, 40px);
+  transition: opacity 0.4s;
+}
+
+.topbar__brand {
+  padding: 8px 0;
+  border: 0;
+  background: none;
+  font-size: 20px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.topbar__tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin: 0;
+  padding: 0 16px;
+  border: 2px solid var(--pill-border);
+  border-radius: 999px;
+  background: var(--pill-bg);
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 0.6s,
+    border-color 0.6s,
+    transform 0.15s;
+}
+
+button.pill:hover {
+  transform: translateY(-1px);
+}
+
+.pill--static {
+  padding-left: 10px;
+  cursor: default;
+}
+
+.pill__icon {
+  display: inline-flex;
+}
+
+/* honey jar */
+.honey-jar__glass {
+  fill: rgb(255 243 214 / 70%);
+}
+
+.honey-jar__honey {
+  fill: var(--honey);
+  transition:
+    y 0.8s var(--ease-spring),
+    height 0.8s var(--ease-spring);
+}
+
+.honey-jar__outline {
+  fill: none;
+  stroke: var(--pill-border);
+  stroke-width: 2.5;
+}
+
+.honey-jar__lid {
+  fill: #c9853a;
+  stroke: var(--pill-border);
+  stroke-width: 2.5;
+}
+
+/* ---------- garden map ---------- */
+
+.garden-map {
+  position: fixed;
+  bottom: clamp(12px, 3dvh, 28px);
+  left: 50%;
+  z-index: 20;
+  max-width: calc(100% - 32px);
+  translate: -50% 0;
+  transition: opacity 0.4s;
+}
+
+.garden-map ol {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+  padding: 4px 10px;
+  border: 2px solid var(--pill-border);
+  border-radius: 999px;
+  background: var(--pill-bg);
+  list-style: none;
+  transition:
+    background-color 0.6s,
+    border-color 0.6s;
+}
+
+.garden-map__stop {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.garden-map__stop[aria-current] {
+  color: var(--current);
+}
+
+.garden-map__dot {
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--wood-edge);
+  border-radius: 50%;
+  transition: scale 0.3s var(--ease-spring);
+}
+
+.garden-map__stop--hive .garden-map__dot {
+  background: var(--straw);
+}
+
+.garden-map__stop--meadow .garden-map__dot {
+  background: #9fcd7a;
+}
+
+.garden-map__stop--greenhouse .garden-map__dot {
+  background: #d7ece6;
+}
+
+.garden-map__stop--wild .garden-map__dot {
+  background: #c9a36b;
+}
+
+.garden-map__stop[aria-current] .garden-map__dot {
+  background: var(--honey);
+  border-color: var(--ink);
+  scale: 1.3;
+}
+
+.garden-map__path {
+  width: 28px;
+  border-top: 2px dashed var(--map-path);
+}
+
+/* While a project is open, the controls step aside. */
+html.is-reading :is(.topbar, .garden-map) {
+  opacity: 0;
+}
+
+/* round icon buttons (previous / next) */
+.round-button {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: 2px solid var(--pill-border);
+  border-radius: 50%;
+  background: var(--pill-bg);
+  color: var(--ink);
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+
+.round-button:hover {
+  transform: scale(1.06);
+}
+
+@media (width <= 720px) {
+  .topbar__brand {
+    font-size: 17px;
+  }
+
+  .topbar__tools {
+    gap: 6px;
+  }
+
+  .pill {
+    padding: 0 12px;
+  }
+
+  .pill .pill__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* Only the current stop keeps its name on a small screen. */
+  .garden-map__stop:not([aria-current]) .garden-map__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .garden-map__path {
+    width: 14px;
+  }
+
+  .night-hint {
+    display: none;
+  }
+}

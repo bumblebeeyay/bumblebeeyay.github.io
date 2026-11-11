@@ -1,13 +1,14 @@
 /*
- * Flowers are closed by default and bloom on hover, keyboard focus,
+ * Flowers are closed by default and bloom on hover, keyboard focus, once visited,
  * or when `.is-bloomed` is set from code (click, touch).
  * Colors come from --petal, --outline and --core, set per flower.
  */
 .flower {
   display: block;
-  width: 110px;
-  height: 190px;
+  width: calc(150px * var(--growth, 1));
+  height: calc(259px * var(--growth, 1));
   overflow: visible;
+  transition: filter 0.5s;
 }
 
 .flower__stalk {
@@ -65,18 +66,31 @@
 }
 
 /* open */
-:is(.plot:hover, .plot:focus-visible, .flower.is-bloomed) .flower__bud {
+:is(.plot:hover, .plot:focus-visible, .plot.is-visited, .flower.is-bloomed)
+  .flower__bud {
   transform: scale(0.5);
   opacity: 0;
 }
 
-:is(.plot:hover, .plot:focus-visible, .flower.is-bloomed) :is(.flower__petal, .flower__core) {
+:is(.plot:hover, .plot:focus-visible, .plot.is-visited, .flower.is-bloomed)
+  :is(.flower__petal, .flower__core) {
   transform: none;
+}
+
+/* At night, flowers sleep until a visitor comes close. */
+:root[data-theme="night"]
+  .plot:not(:hover, :focus-visible, .is-visited)
+  .flower:not(.is-bloomed) {
+  filter: brightness(0.6) saturate(0.7);
+}
+
+:root[data-theme="night"] .plot.is-visited .flower {
+  filter: drop-shadow(0 0 10px rgb(255 226 138 / 45%));
 }
 
 @media (width <= 720px) {
   .flower {
-    width: 92px;
-    height: 159px;
+    width: calc(104px * var(--growth, 1));
+    height: calc(180px * var(--growth, 1));
   }
 }

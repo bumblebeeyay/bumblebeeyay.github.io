@@ -1,86 +1,111 @@
-import { h } from '../dom/create';
-import { viewportCenter } from '../dom/geometry';
-import { nextPaint, waitForTransition } from '../dom/transition';
-import type { Vec2 } from '../core/vec2';
-import type { PlantedProject } from '../domain/parseGarden';
-import { FLOWER_HEAD_SELECTOR, renderFlower, setBloomed } from '../flower/renderFlower';
-import { grassClump } from '../views/grass';
-import { DETAILS_TITLE_ID, renderProjectDetails } from '../views/projectDetails';
+import type { Vec2 } from "../core/vec2";
+import { h } from "../dom/create";
+import { viewportCenter } from "../dom/geometry";
+import { nextPaint, waitForTransition } from "../dom/transition";
+import type { PlantedProject } from "../domain/parseGarden";
+import { FLOWER_HEAD_SELECTOR } from "../flower/renderFlower";
+import { renderHerbariumSheet, SHEET_TITLE_ID } from "../views/herbarium";
+import { chevronLeftIcon, chevronRightIcon, closeIcon } from "../views/icons";
 
-const VISIBLE_CLASS = 'is-visible';
+const VISIBLE_CLASS = "is-visible";
 const CLOSE_ANIMATION_MS = 500;
 
+export type Direction = -1 | 1;
+
 /**
- * The close-up of one project: its flower in full bloom next to a big sign.
+ * The close-up of one project: a herbarium sheet with its pressed flower and notes.
  * Uses a non-modal <dialog> so the bee can keep flying above it; the garden
  * behind is made inert by the camera, so focus cannot wander there.
  */
 export class ProjectDialog {
   readonly element: HTMLDialogElement;
-  readonly #flowerSlot: HTMLElement;
-  readonly #detailsSlot: HTMLElement;
+  readonly #sheet: HTMLElement;
   readonly #closeButton: HTMLButtonElement;
   #onRequestClose: () => void = () => undefined;
+  #onNavigate: (direction: Direction) => void = () => undefined;
 
-  constructor() {
+  constructor(private readonly brand: string) {
     this.#closeButton = h(
-      'button',
-      { type: 'button', class: 'project-dialog__close', 'aria-label': 'Back to the garden' },
-      '×',
+      "button",
+      { type: "button", class: "pill herbarium__back" },
+      closeIcon(),
+      h("span", {}, "Back to the garden"),
     );
-    this.#flowerSlot = h('div', { class: 'project-dialog__flower-slot' });
-    this.#detailsSlot = h('div', { class: 'wood-board big-sign__board' });
+    const previous = h(
+      "button",
+      {
+        type: "button",
+        class: "round-button herbarium__step herbarium__step--previous",
+        "aria-label": "Previous flower",
+      },
+      chevronLeftIcon(),
+    );
+    const next = h(
+      "button",
+      {
+        type: "button",
+        class: "round-button herbarium__step herbarium__step--next",
+        "aria-label": "Next flower",
+      },
+      chevronRightIcon(),
+    );
+    this.#sheet = h("article", {
+      class: "sheet",
+      "aria-labelledby": SHEET_TITLE_ID,
+    });
 
     this.element = h(
-      'dialog',
-      { class: 'project-dialog', 'aria-labelledby': DETAILS_TITLE_ID },
+      "dialog",
+      { class: "herbarium", "aria-labelledby": SHEET_TITLE_ID },
       this.#closeButton,
-      h(
-        'div',
-        { class: 'project-dialog__stage' },
-        h('div', { class: 'project-dialog__flower' }, this.#flowerSlot, grassClump('project-dialog__grass')),
-        h(
-          'article',
-          { class: 'big-sign' },
-          h('span', { class: 'wood-post big-sign__post big-sign__post--left' }),
-          h('span', { class: 'wood-post big-sign__post big-sign__post--right' }),
-          this.#detailsSlot,
-          grassClump('big-sign__grass', 'big-sign__grass--left'),
-          grassClump('big-sign__grass', 'big-sign__grass--right'),
-        ),
-      ),
+      previous,
+      this.#sheet,
+      next,
     );
 
-    this.#closeButton.addEventListener('click', () => this.#onRequestClose());
-    this.element.addEventListener('click', this.#handleBackdropClick);
-    document.addEventListener('keydown', this.#handleKeydown);
+    this.#closeButton.addEventListener("click", () => this.#onRequestClose());
+    previous.addEventListener("click", () => this.#onNavigate(-1));
+    next.addEventListener("click", () => this.#onNavigate(1));
+    this.element.addEventListener("click", this.#handleBackdropClick);
+    document.addEventListener("keydown", this.#handleKeydown);
   }
 
-  /** Called when the visitor asks to leave: × button, Escape, or a click beside the sign. */
+  /** Called when the visitor asks to leave: back button, Escape, or a click beside the sheet. */
   onRequestClose(handler: () => void): void {
     this.#onRequestClose = handler;
+  }
+
+  /** Called for the previous/next buttons and the left/right arrow keys. */
+  onNavigate(handler: (direction: Direction) => void): void {
+    this.#onNavigate = handler;
   }
 
   get isOpen(): boolean {
     return this.element.open;
   }
 
-  /** Where the big flower's heart is on screen, or null when closed. */
+  /** Where the pressed flower's heart is on screen, or null when closed. */
   get flowerHeadPosition(): Vec2 | null {
-    const head = this.isOpen ? this.#flowerSlot.querySelector(FLOWER_HEAD_SELECTOR) : null;
+    const head = this.isOpen
+      ? this.#sheet.querySelector(FLOWER_HEAD_SELECTOR)
+      : null;
     return head ? viewportCenter(head) : null;
   }
 
-  async open({ project }: PlantedProject): Promise<void> {
-    const flower = renderFlower(project.flower);
-    setBloomed(flower, true);
-    this.#flowerSlot.replaceChildren(flower);
-    this.#detailsSlot.replaceChildren(renderProjectDetails(project));
-
+  async open(entry: PlantedProject): Promise<void> {
+    this.show(entry);
     this.element.show();
     this.#closeButton.focus({ preventScroll: true });
     await nextPaint();
     this.element.classList.add(VISIBLE_CLASS);
+  }
+
+  /** Puts another project on the sheet, without closing. */
+  show(entry: PlantedProject): void {
+    this.#sheet.replaceChildren(
+      renderHerbariumSheet(entry, this.brand, new Date()),
+    );
+    this.#sheet.scrollTop = 0;
   }
 
   async close(): Promise<void> {
@@ -91,13 +116,18 @@ export class ProjectDialog {
   }
 
   readonly #handleBackdropClick = (event: MouseEvent): void => {
-    const target = event.target as Element;
-    if (!target.closest('.big-sign, .project-dialog__flower, .project-dialog__close')) {
-      this.#onRequestClose();
-    }
+    if (event.target === this.element) this.#onRequestClose();
   };
 
   readonly #handleKeydown = (event: KeyboardEvent): void => {
-    if (event.key === 'Escape' && this.isOpen) this.#onRequestClose();
+    if (!this.isOpen || event.defaultPrevented) return;
+    if (event.key === "Escape") {
+      this.#onRequestClose();
+    } else if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+      this.#onNavigate(event.key === "ArrowLeft" ? -1 : 1);
+    } else {
+      return;
+    }
+    event.preventDefault();
   };
 }

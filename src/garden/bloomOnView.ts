@@ -1,4 +1,4 @@
-import { FLOWER_SELECTOR, setBloomed } from '../flower/renderFlower';
+import { FLOWER_SELECTOR, setBloomed } from "../flower/renderFlower";
 
 /**
  * Touch screens cannot hover, so flowers there bloom once they are well in view.

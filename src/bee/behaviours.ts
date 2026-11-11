@@ -1,5 +1,5 @@
-import { add, vec2, type Vec2 } from '../core/vec2';
-import type { PointerSource } from '../input/PointerTracker';
+import { add, vec2, type Vec2 } from "../core/vec2";
+import type { PointerSource } from "../input/PointerTracker";
 
 /**
  * Decides where the bee wants to be. The bee only knows this interface,
@@ -53,7 +53,10 @@ export class Circling implements BeeBehaviour {
     const angle = (timeMs / this.options.periodMs) * Math.PI * 2;
     const { radius } = this.options;
     // Different speeds on each axis give a looser, less mechanical loop.
-    return add(this.#lastCenter, vec2(Math.cos(angle) * radius.x, Math.sin(angle * 1.3) * radius.y));
+    return add(
+      this.#lastCenter,
+      vec2(Math.cos(angle) * radius.x, Math.sin(angle * 1.3) * radius.y),
+    );
   }
 }
 
@@ -70,6 +73,8 @@ export class FollowPointer implements BeeBehaviour {
 
   targetAt(timeMs: number): Vec2 {
     const { position } = this.pointer;
-    return position ? add(position, this.offset) : this.fallback.targetAt(timeMs);
+    return position
+      ? add(position, this.offset)
+      : this.fallback.targetAt(timeMs);
   }
 }
