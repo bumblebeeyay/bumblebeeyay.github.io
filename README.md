@@ -69,8 +69,9 @@ src/
 │                        transitions, animation loop, media queries, the Controller base
 ├── flower/              petal shapes registry + flower SVG renderer
 ├── bee/                 Bee entity + interchangeable flight behaviours
-├── input/               pointer tracking
-├── world/               horizontal scrolling (wheel, drag, keys) and the parallax position
+├── input/               what the visitor does, turned into state: pointer tracking, and
+│                        horizontal scrolling from wheel, drag and keys (it also publishes
+│                        the parallax position)
 ├── views/               pure render functions: content in, DOM out; the page's ids
 │                        (ids.ts) and go-to links (navigation.ts)
 ├── garden/              interaction: visit flow, camera, herbarium and list dialogs,

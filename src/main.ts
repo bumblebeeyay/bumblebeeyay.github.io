@@ -27,7 +27,7 @@ import { renderGardenMap } from "./views/gardenMap";
 import { PAGE_IDS } from "./views/ids";
 import { setPlotVisited } from "./views/plot";
 import { renderTopbar } from "./views/topbar";
-import { WorldScroller } from "./world/WorldScroller";
+import { WorldScroller } from "./input/WorldScroller";
 
 /** Composition root: the only place that knows every piece and wires them together. */
 function main(root: HTMLElement): void {

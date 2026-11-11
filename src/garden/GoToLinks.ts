@@ -1,6 +1,6 @@
 import { Controller } from "../dom/Controller";
 import { goToPlaceId } from "../views/navigation";
-import type { WorldScroller } from "../world/WorldScroller";
+import type { WorldScroller } from "../input/WorldScroller";
 
 /**
  * Makes every go-to control (signposts, the map, the brand, the hive's button) walk

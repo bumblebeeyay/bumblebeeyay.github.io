@@ -12,7 +12,7 @@ import { indexProjects } from "../domain/garden";
 import { makeContent } from "../test/fixtures";
 import { renderGarden } from "../views/garden";
 import { SHEET_TITLE_ID } from "../views/ids";
-import { WorldScroller } from "../world/WorldScroller";
+import { WorldScroller } from "../input/WorldScroller";
 import { GardenApp } from "./GardenApp";
 import { GardenCamera } from "./GardenCamera";
 import { GoToLinks } from "./GoToLinks";

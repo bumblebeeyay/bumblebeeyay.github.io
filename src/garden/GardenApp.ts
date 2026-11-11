@@ -11,7 +11,7 @@ import {
   setBloomed,
 } from "../flower/renderFlower";
 import { PLOT_SELECTOR, PROJECT_ID_ATTRIBUTE } from "../views/plot";
-import type { WorldScroller } from "../world/WorldScroller";
+import type { WorldScroller } from "../input/WorldScroller";
 import type { GardenCamera } from "./GardenCamera";
 import type { Direction, ProjectDialog } from "./ProjectDialog";
 import type { VisitedProjects } from "./VisitedProjects";
