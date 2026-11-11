@@ -1,3 +1,4 @@
+import { Controller } from "../dom/Controller";
 import { GREENHOUSE_PANE_SELECTOR } from "../views/area";
 
 const WIPED_CLASS = "is-wiped";
@@ -11,26 +12,37 @@ const WIPED_CLASS = "is-wiped";
  * Measuring panes forces layout, so pointer moves are handled at most once per frame,
  * and panes already wiped are never measured again.
  */
-export class GreenhouseFog {
+export class GreenhouseFog extends Controller {
   /** Panes still fogged. Wiped panes stay clear, so they leave this list for good. */
   #fogged: HTMLElement[];
   /** The latest pointer position waiting for the next frame, if any. */
   #pendingPointer: { readonly x: number; readonly y: number } | null = null;
+  #frame = 0;
 
   constructor(private readonly greenhouse: HTMLElement) {
+    super();
     this.#fogged = [
       ...greenhouse.querySelectorAll<HTMLElement>(GREENHOUSE_PANE_SELECTOR),
     ];
   }
 
-  start(): void {
-    this.greenhouse.addEventListener("pointermove", this.#handlePointer, {
-      passive: true,
+  protected connect(signal: AbortSignal): void {
+    const passive = { passive: true, signal };
+    this.greenhouse.addEventListener(
+      "pointermove",
+      this.#handlePointer,
+      passive,
+    );
+    this.greenhouse.addEventListener(
+      "pointerdown",
+      this.#handlePointer,
+      passive,
+    );
+    this.greenhouse.addEventListener("focusin", this.#handleFocus, { signal });
+    signal.addEventListener("abort", () => {
+      cancelAnimationFrame(this.#frame);
+      this.#pendingPointer = null;
     });
-    this.greenhouse.addEventListener("pointerdown", this.#handlePointer, {
-      passive: true,
-    });
-    this.greenhouse.addEventListener("focusin", this.#handleFocus);
   }
 
   readonly #handlePointer = (event: PointerEvent): void => {
@@ -38,7 +50,7 @@ export class GreenhouseFog {
     const alreadyScheduled = this.#pendingPointer !== null;
     this.#pendingPointer = { x: event.clientX, y: event.clientY };
     if (alreadyScheduled) return;
-    requestAnimationFrame(() => {
+    this.#frame = requestAnimationFrame(() => {
       const point = this.#pendingPointer;
       this.#pendingPointer = null;
       if (point) this.#wipeWhere((rect) => contains(rect, point.x, point.y));

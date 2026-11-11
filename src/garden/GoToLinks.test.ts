@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { h } from "../dom/create";
 import { goTo } from "../views/navigation";
-import { followGoToLinks } from "./goToPlaces";
+import { GoToLinks } from "./GoToLinks";
 
-describe("followGoToLinks", () => {
+describe("GoToLinks", () => {
   const place = h("section", { id: "meadow" });
   const button = h("button", goTo("meadow"), h("span", {}, "Meadow"));
   const nowhere = h("button", goTo("missing"));
@@ -15,7 +15,9 @@ describe("followGoToLinks", () => {
 
   const setUp = (canMove = true) => {
     const scroller = { scrollToElement: vi.fn() };
-    stop = followGoToLinks(document, scroller, () => canMove);
+    const links = new GoToLinks(document, scroller, () => canMove);
+    links.start();
+    stop = () => links.destroy();
     return scroller;
   };
 

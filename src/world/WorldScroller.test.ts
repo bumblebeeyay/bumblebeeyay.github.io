@@ -22,10 +22,7 @@ describe("WorldScroller", () => {
     scroller.start();
   });
 
-  afterEach(() => {
-    // Listeners on window outlive each test's scroller: disable it so it stays quiet.
-    scroller.enabled = false;
-  });
+  afterEach(() => scroller.destroy());
 
   const key = (k: string, init: KeyboardEventInit = {}) => {
     const event = new KeyboardEvent("keydown", {
@@ -37,11 +34,25 @@ describe("WorldScroller", () => {
     return event;
   };
 
-  it("publishes the scroll position for the parallax, and to listeners", () => {
+  it("publishes the scroll position for the parallax, and the visible strip", () => {
     const listener = vi.fn();
-    scroller.onScroll(listener);
+    scroller.strip.subscribe(listener);
     expect(scene.style.getPropertyValue("--scroll-x")).toBe("0");
-    expect(listener).toHaveBeenCalledWith(0);
+    expect(listener).toHaveBeenCalledWith({ left: 0, width: 1000 });
+  });
+
+  it("publishes again on resize, as the middle of the screen moves", async () => {
+    const listener = vi.fn();
+    scroller.strip.subscribe(listener);
+    window.dispatchEvent(new Event("resize"));
+    await vi.waitFor(() => expect(listener).toHaveBeenCalledTimes(2));
+  });
+
+  it("stops listening once destroyed, and can start again", () => {
+    scroller.destroy();
+    expect(key("ArrowRight").defaultPrevented).toBe(false);
+    scroller.start();
+    expect(key("ArrowRight").defaultPrevented).toBe(true);
   });
 
   it("turns a vertical wheel into sideways scrolling", () => {

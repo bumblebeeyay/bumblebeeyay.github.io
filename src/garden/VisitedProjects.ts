@@ -1,9 +1,9 @@
+import { Store, type ReadonlyStore } from "../util/store";
+
 const STORAGE_KEY = "bees-garden:visited";
 
 /** Minimal storage, so tests can pass a fake. */
 export type KeyValueStore = Pick<Storage, "getItem" | "setItem">;
-
-type Listener = (visited: ReadonlySet<string>) => void;
 
 /**
  * Remembers which projects the visitor has opened, across page loads when storage works.
@@ -11,18 +11,18 @@ type Listener = (visited: ReadonlySet<string>) => void;
  * it just forgets on reload.
  */
 export class VisitedProjects {
-  readonly #ids: Set<string>;
-  readonly #listeners: Listener[] = [];
+  readonly #ids: Store<ReadonlySet<string>>;
+  /** The visited project ids. Follow it to redraw plots and the honey jar. */
+  readonly ids: ReadonlyStore<ReadonlySet<string>>;
 
   constructor(
     private readonly knownIds: ReadonlySet<string>,
     private readonly store: KeyValueStore | null = safeLocalStorage(),
   ) {
-    this.#ids = new Set(this.#load().filter((id) => knownIds.has(id)));
-  }
-
-  get ids(): ReadonlySet<string> {
-    return this.#ids;
+    this.#ids = new Store<ReadonlySet<string>>(
+      new Set(this.#load().filter((id) => knownIds.has(id))),
+    );
+    this.ids = this.#ids;
   }
 
   get total(): number {
@@ -30,16 +30,12 @@ export class VisitedProjects {
   }
 
   add(id: string): void {
-    if (!this.knownIds.has(id) || this.#ids.has(id)) return;
-    this.#ids.add(id);
-    this.#save();
-    for (const listener of this.#listeners) listener(this.#ids);
-  }
-
-  /** Calls `listener` now and after every change. */
-  subscribe(listener: Listener): void {
-    this.#listeners.push(listener);
-    listener(this.#ids);
+    const ids = this.#ids.value;
+    if (!this.knownIds.has(id) || ids.has(id)) return;
+    // A new set, not a mutated one: the store only tells listeners about new values.
+    const next = new Set(ids).add(id);
+    this.#save(next);
+    this.#ids.set(next);
   }
 
   #load(): string[] {
@@ -55,9 +51,9 @@ export class VisitedProjects {
     }
   }
 
-  #save(): void {
+  #save(ids: ReadonlySet<string>): void {
     try {
-      this.store?.setItem(STORAGE_KEY, JSON.stringify([...this.#ids]));
+      this.store?.setItem(STORAGE_KEY, JSON.stringify([...ids]));
     } catch {
       // Storage full or blocked: keep the visit in memory only.
     }

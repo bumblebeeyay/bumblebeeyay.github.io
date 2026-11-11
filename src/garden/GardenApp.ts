@@ -1,6 +1,7 @@
 import { add, vec2 } from "../util/vec2";
 import type { Bee } from "../bee/Bee";
 import type { BeeBehaviour } from "../bee/behaviours";
+import { Controller } from "../dom/Controller";
 import { viewportCenter } from "../dom/geometry";
 import { nextPaint } from "../dom/transition";
 import type { PlantedProject } from "../domain/garden";
@@ -47,11 +48,12 @@ type State =
  * the camera zooms in → the herbarium sheet opens. Then flipping through sheets, and the way back.
  * Each step is delegated; this class only owns the order and the state.
  */
-export class GardenApp {
+export class GardenApp extends Controller {
   #state: State = { phase: "exploring" };
   readonly #order: readonly string[];
 
   constructor(private readonly deps: GardenAppDependencies) {
+    super();
     this.#order = [...deps.projects.keys()];
   }
 
@@ -59,13 +61,15 @@ export class GardenApp {
     return this.#state.phase === "exploring";
   }
 
-  start(): void {
-    this.deps.scroller.viewport.addEventListener(
-      "click",
-      this.#handlePlotClick,
-    );
-    this.deps.dialog.onRequestClose(() => void this.leave());
-    this.deps.dialog.onNavigate((direction) => this.step(direction));
+  protected connect(signal: AbortSignal): void {
+    const { dialog, scroller } = this.deps;
+    scroller.viewport.addEventListener("click", this.#handlePlotClick, {
+      signal,
+    });
+    dialog.closeRequested.subscribe(() => void this.leave(), { signal });
+    dialog.stepRequested.subscribe((direction) => this.step(direction), {
+      signal,
+    });
   }
 
   async visit(plot: HTMLElement): Promise<void> {

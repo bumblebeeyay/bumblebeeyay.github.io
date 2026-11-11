@@ -3,7 +3,8 @@ import "./styles/index.css";
 import { Bee } from "./bee/Bee";
 import { Circling, FollowPointer } from "./bee/behaviours";
 import { renderBee } from "./bee/renderBee";
-import { startLoop } from "./dom/loop";
+import type { Controller } from "./dom/Controller";
+import { AnimationLoop } from "./dom/loop";
 import { canHover, prefersReducedMotion } from "./dom/media";
 import { isNightAt } from "./util/time";
 import { vec2 } from "./util/vec2";
@@ -11,13 +12,13 @@ import rawGarden from "./data/garden.json";
 import { h } from "./dom/create";
 import { indexProjects } from "./domain/garden";
 import { parseGarden } from "./domain/parseGarden";
-import { bloomOnView } from "./garden/bloomOnView";
+import { BloomOnView } from "./garden/BloomOnView";
 import { GardenApp } from "./garden/GardenApp";
 import { GardenCamera } from "./garden/GardenCamera";
-import { followGoToLinks } from "./garden/goToPlaces";
+import { GoToLinks } from "./garden/GoToLinks";
 import { GreenhouseFog } from "./garden/GreenhouseFog";
 import { ListDialog } from "./garden/ListDialog";
-import { NightMode, syncThemeColor } from "./garden/NightMode";
+import { NightMode } from "./garden/NightMode";
 import { ProjectDialog } from "./garden/ProjectDialog";
 import { VisitedProjects } from "./garden/VisitedProjects";
 import { PointerTracker } from "./input/PointerTracker";
@@ -51,23 +52,19 @@ function main(root: HTMLElement): void {
 
   // Moving around
   const scroller = new WorldScroller(viewport, scene, reducedMotion);
-  scroller.start();
-  scroller.onScroll((x) => {
-    const here = placeAt(places, x + viewport.clientWidth / 2);
+  scroller.strip.subscribe(({ left, width }) => {
+    const here = placeAt(places, left + width / 2);
     if (here) map.setCurrent(here.id);
   });
 
   // Day and night
   const night = new NightMode(isNightAt(new Date()));
-  night.subscribe((isNight) => {
-    topbar.setNight(isNight);
-    syncThemeColor();
-  });
+  night.night.subscribe((isNight) => topbar.setNight(isNight));
   topbar.nightButton.addEventListener("click", () => night.toggle());
 
   // Visited flowers and the honey jar
   const visited = new VisitedProjects(new Set(projects.keys()));
-  visited.subscribe((ids) => {
+  visited.ids.subscribe((ids) => {
     topbar.setVisited(ids.size, visited.total);
     for (const [id, plot] of plots) {
       const entry = projects.get(id);
@@ -75,12 +72,11 @@ function main(root: HTMLElement): void {
     }
   });
 
-  for (const greenhouse of greenhouses) new GreenhouseFog(greenhouse).start();
-
   // The bee
   const idleSpot = () => vec2(innerWidth * 0.62, innerHeight * 0.3);
+  const pointer = new PointerTracker(window);
   const exploring = new FollowPointer(
-    new PointerTracker(window),
+    pointer,
     new Circling(idleSpot, {
       radius: vec2(60, 40),
       speed: 0.02,
@@ -95,8 +91,8 @@ function main(root: HTMLElement): void {
     fallbackCenter: idleSpot(),
   });
   const bee = new Bee(beeElement, idleSpot(), exploring);
-  startLoop((dt, time) => bee.update(dt, time));
 
+  // A visit
   const app = new GardenApp({
     scroller,
     projects,
@@ -109,8 +105,6 @@ function main(root: HTMLElement): void {
     reading,
     reducedMotion,
   });
-  app.start();
-  followGoToLinks(document, scroller, () => app.isExploring);
 
   // The list view, for visitors in a hurry
   topbar.listButton.addEventListener("click", () => {
@@ -119,12 +113,25 @@ function main(root: HTMLElement): void {
     scroller.enabled = false;
     list.open();
   });
-  list.onClose(() => {
+  list.closed.subscribe(() => {
     if (app.isExploring) scroller.enabled = true;
   });
-  list.onShowInGarden((id) => void app.visitById(id));
+  list.showRequested.subscribe((id) => void app.visitById(id));
 
-  if (!canHover()) bloomOnView(plots.values());
+  // Everything is built and wired: bring it to life.
+  const controllers: Controller[] = [
+    scroller,
+    night,
+    pointer,
+    dialog,
+    list,
+    app,
+    new GoToLinks(document, scroller, () => app.isExploring),
+    new AnimationLoop((dt, time) => bee.update(dt, time)),
+    ...greenhouses.map((greenhouse) => new GreenhouseFog(greenhouse)),
+    ...(canHover() ? [] : [new BloomOnView(plots.values())]),
+  ];
+  for (const controller of controllers) controller.start();
 }
 
 const root = document.querySelector<HTMLElement>("#app");

@@ -1,4 +1,6 @@
+import { Emitter, type Subscribable } from "../util/emitter";
 import type { Vec2 } from "../util/vec2";
+import { Controller } from "../dom/Controller";
 import { h } from "../dom/create";
 import { viewportCenter } from "../dom/geometry";
 import { nextPaint, waitForTransition } from "../dom/transition";
@@ -18,21 +20,30 @@ export type Direction = -1 | 1;
  * Uses a non-modal <dialog> so the bee can keep flying above it; the garden
  * behind is made inert by the camera, so focus cannot wander there.
  */
-export class ProjectDialog {
+export class ProjectDialog extends Controller {
   readonly element: HTMLDialogElement;
   readonly #sheet: HTMLElement;
   readonly #closeButton: HTMLButtonElement;
-  #onRequestClose: () => void = () => undefined;
-  #onNavigate: (direction: Direction) => void = () => undefined;
+  readonly #previousButton: HTMLButtonElement;
+  readonly #nextButton: HTMLButtonElement;
+
+  readonly #closeRequested = new Emitter();
+  /** The visitor asks to leave: back button, Escape, or a click beside the sheet. */
+  readonly closeRequested: Subscribable<void> = this.#closeRequested;
+
+  readonly #stepRequested = new Emitter<Direction>();
+  /** The visitor asks for the previous or next sheet: buttons or left/right arrow keys. */
+  readonly stepRequested: Subscribable<Direction> = this.#stepRequested;
 
   constructor(private readonly brand: string) {
+    super();
     this.#closeButton = h(
       "button",
       { type: "button", class: "pill herbarium__back" },
       closeIcon(),
       h("span", {}, "Back to the garden"),
     );
-    const previous = h(
+    this.#previousButton = h(
       "button",
       {
         type: "button",
@@ -41,7 +52,7 @@ export class ProjectDialog {
       },
       chevronLeftIcon(),
     );
-    const next = h(
+    this.#nextButton = h(
       "button",
       {
         type: "button",
@@ -59,26 +70,39 @@ export class ProjectDialog {
       "dialog",
       { class: "herbarium", "aria-labelledby": SHEET_TITLE_ID },
       this.#closeButton,
-      previous,
+      this.#previousButton,
       this.#sheet,
-      next,
+      this.#nextButton,
     );
-
-    this.#closeButton.addEventListener("click", () => this.#onRequestClose());
-    previous.addEventListener("click", () => this.#onNavigate(-1));
-    next.addEventListener("click", () => this.#onNavigate(1));
-    this.element.addEventListener("click", this.#handleBackdropClick);
-    document.addEventListener("keydown", this.#handleKeydown);
   }
 
-  /** Called when the visitor asks to leave: back button, Escape, or a click beside the sheet. */
-  onRequestClose(handler: () => void): void {
-    this.#onRequestClose = handler;
-  }
-
-  /** Called for the previous/next buttons and the left/right arrow keys. */
-  onNavigate(handler: (direction: Direction) => void): void {
-    this.#onNavigate = handler;
+  protected connect(signal: AbortSignal): void {
+    this.#closeButton.addEventListener(
+      "click",
+      () => this.#closeRequested.emit(),
+      { signal },
+    );
+    this.#previousButton.addEventListener(
+      "click",
+      () => this.#stepRequested.emit(-1),
+      { signal },
+    );
+    this.#nextButton.addEventListener(
+      "click",
+      () => this.#stepRequested.emit(1),
+      { signal },
+    );
+    this.element.addEventListener("click", this.#handleBackdropClick, {
+      signal,
+    });
+    // On the document: the keys must work wherever focus is inside the open sheet.
+    this.element.ownerDocument.addEventListener(
+      "keydown",
+      this.#handleKeydown,
+      {
+        signal,
+      },
+    );
   }
 
   get isOpen(): boolean {
@@ -115,15 +139,15 @@ export class ProjectDialog {
   }
 
   readonly #handleBackdropClick = (event: MouseEvent): void => {
-    if (event.target === this.element) this.#onRequestClose();
+    if (event.target === this.element) this.#closeRequested.emit();
   };
 
   readonly #handleKeydown = (event: KeyboardEvent): void => {
     if (!this.isOpen || event.defaultPrevented) return;
     if (event.key === "Escape") {
-      this.#onRequestClose();
+      this.#closeRequested.emit();
     } else if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
-      this.#onNavigate(event.key === "ArrowLeft" ? -1 : 1);
+      this.#stepRequested.emit(event.key === "ArrowLeft" ? -1 : 1);
     } else {
       return;
     }

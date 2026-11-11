@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { startLoop } from "./loop";
+import { AnimationLoop } from "./loop";
 
-describe("startLoop", () => {
+describe("AnimationLoop", () => {
   let callbacks: FrameRequestCallback[];
 
   /** Runs the pending animation frame at `time`. */
@@ -25,9 +25,20 @@ describe("startLoop", () => {
     vi.unstubAllGlobals();
   });
 
+  const started = (onFrame: () => void) => {
+    const loop = new AnimationLoop(onFrame);
+    loop.start();
+    return loop;
+  };
+
+  it("does nothing until started", () => {
+    new AnimationLoop(vi.fn());
+    expect(callbacks).toHaveLength(0);
+  });
+
   it("passes the frame duration and the time", () => {
     const onFrame = vi.fn();
-    startLoop(onFrame);
+    started(onFrame);
     frameAt(16);
     frameAt(32);
     expect(onFrame.mock.calls).toEqual([
@@ -38,16 +49,24 @@ describe("startLoop", () => {
 
   it("caps long frames, so a hidden tab does not teleport the bee", () => {
     const onFrame = vi.fn();
-    startLoop(onFrame);
+    started(onFrame);
     frameAt(5000);
     expect(onFrame).toHaveBeenCalledWith(50, 5000);
   });
 
-  it("stops when asked", () => {
+  it("never passes a negative duration", () => {
     const onFrame = vi.fn();
-    const stop = startLoop(onFrame);
+    vi.mocked(performance.now).mockReturnValue(100);
+    started(onFrame);
+    frameAt(90);
+    expect(onFrame).toHaveBeenCalledWith(0, 90);
+  });
+
+  it("stops when destroyed", () => {
+    const onFrame = vi.fn();
+    const loop = started(onFrame);
     frameAt(16);
-    stop();
+    loop.destroy();
     frameAt(32);
     expect(onFrame).toHaveBeenCalledTimes(1);
   });

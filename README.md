@@ -63,9 +63,10 @@ src/
 ├── main.ts              composition root: builds every piece and wires them together
 ├── data/garden.json     all content
 ├── domain/              content types, runtime validation of the JSON, the project index
-├── util/                pure helpers (no browser APIs): vectors, easing, seeded random, clock
+├── util/                pure helpers (no browser APIs): vectors, easing, seeded random, clock,
+│                        Emitter and Store
 ├── dom/                 browser-facing helpers: element builders (no innerHTML), geometry,
-│                        transitions, animation loop, media queries
+│                        transitions, animation loop, media queries, the Controller base
 ├── flower/              petal shapes registry + flower SVG renderer
 ├── bee/                 Bee entity + interchangeable flight behaviours
 ├── input/               pointer tracking
@@ -88,6 +89,14 @@ Some choices:
 - **Dependencies are injected.** `GardenApp` gets the bee, camera, dialog and behaviours through
   its constructor and only owns the order of a visit (bloom → fly → zoom → open) and its state.
   `main.ts` is the only file that knows about every module.
+- **One lifecycle for every interactive piece.** Controllers (dialogs, scroller, visit flow,
+  night mode, greenhouse fog…) extend `Controller`: the constructor only builds, `start()`
+  wires listeners to an abort signal, `destroy()` unwires them all at once. `main.ts` builds
+  everything first, then starts every controller in one place. Views never listen to anything.
+- **Two ways to notify, both typed.** An `Emitter` is for events ("the visitor asked to
+  close"); a `Store` is for state, and tells a new listener the current value at once (night
+  or day, visited flowers, the visible strip of the garden). Owners keep them private and
+  expose them read-only, and every subscription can end with an abort signal.
 - **Views are pure functions** that turn content into DOM. Text is always inserted as text
   nodes, and links are checked when the JSON is parsed, so content cannot inject markup or
   `javascript:` URLs.

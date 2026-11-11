@@ -1,9 +1,9 @@
-type Listener = (night: boolean) => void;
+import { Controller } from "../dom/Controller";
+import { Store, type ReadonlyStore } from "../util/store";
 
 /**
  * Tints the browser's own interface (the address bar on phones) with the sky.
  * The color is read from the current theme's `--sky-mid` token, so it is never written twice.
- * Call it after the theme changed.
  */
 export function syncThemeColor(doc: Document = document): void {
   const meta = doc.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
@@ -14,38 +14,36 @@ export function syncThemeColor(doc: Document = document): void {
 }
 
 /**
- * Day or night, shown as `data-theme` on the root element for the stylesheets.
+ * Day or night, shown as `data-theme` on the root element for the stylesheets,
+ * and as the browser's theme color.
  * Starts from the visitor's clock; the switch then wins for the rest of the visit.
  */
-export class NightMode {
-  #night: boolean;
-  readonly #listeners: Listener[] = [];
+export class NightMode extends Controller {
+  readonly #night: Store<boolean>;
+  /** True at night. Follow it to redraw anything that changes with the theme. */
+  readonly night: ReadonlyStore<boolean>;
 
   constructor(
     initiallyNight: boolean,
     private readonly root: HTMLElement = document.documentElement,
   ) {
-    this.#night = initiallyNight;
-    this.#apply();
-  }
-
-  get isNight(): boolean {
-    return this.#night;
+    super();
+    this.#night = new Store(initiallyNight);
+    this.night = this.#night;
   }
 
   toggle(): void {
-    this.#night = !this.#night;
-    this.#apply();
+    this.#night.set(!this.#night.value);
   }
 
-  /** Calls `listener` now and after every switch. */
-  subscribe(listener: Listener): void {
-    this.#listeners.push(listener);
-    listener(this.#night);
-  }
-
-  #apply(): void {
-    this.root.dataset.theme = this.#night ? "night" : "day";
-    for (const listener of this.#listeners) listener(this.#night);
+  protected connect(signal: AbortSignal): void {
+    this.#night.subscribe(
+      (night) => {
+        this.root.dataset.theme = night ? "night" : "day";
+        // After the theme changed, so the new sky color is the one read.
+        syncThemeColor(this.root.ownerDocument);
+      },
+      { signal },
+    );
   }
 }

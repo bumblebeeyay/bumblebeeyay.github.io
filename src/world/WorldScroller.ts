@@ -1,3 +1,6 @@
+import { Controller } from "../dom/Controller";
+import { Store, type ReadonlyStore } from "../util/store";
+
 const DRAG_THRESHOLD_PX = 6;
 const LINE_HEIGHT_PX = 40;
 /** Arrow keys walk about a third of the screen: the next plot comes into view, the last one stays. */
@@ -5,7 +8,19 @@ const ARROW_STEP = 0.35;
 /** Page keys walk almost a whole screen, keeping a strip of the old one for context. */
 const PAGE_STEP = 0.85;
 
-type ScrollListener = (scrollLeft: number) => void;
+/** The part of the garden on screen, in the track's coordinates. */
+export interface VisibleStrip {
+  readonly left: number;
+  readonly width: number;
+}
+
+interface Drag {
+  readonly startX: number;
+  readonly startScroll: number;
+  moved: boolean;
+  /** Removes the window listeners added for this drag only. */
+  readonly listeners: AbortController;
+}
 
 /**
  * The garden is one long horizontal strip. This turns every usual way of moving
@@ -15,47 +30,60 @@ type ScrollListener = (scrollLeft: number) => void;
  * It also publishes the scroll position as `--scroll-x` on `scene`, which the
  * parallax layers read in CSS.
  */
-export class WorldScroller {
-  readonly #listeners: ScrollListener[] = [];
+export class WorldScroller extends Controller {
   #frame = 0;
-  #drag: {
-    readonly startX: number;
-    readonly startScroll: number;
-    moved: boolean;
-  } | null = null;
+  #drag: Drag | null = null;
   /** While false (a project is open), keys and wheel are left alone. */
   enabled = true;
+
+  /**
+   * A new strip on every scroll or resize, at most once per frame. A resize can change
+   * what is in the middle of the screen without scrolling, hence the width.
+   */
+  readonly #strip: Store<VisibleStrip>;
+  readonly strip: ReadonlyStore<VisibleStrip>;
 
   constructor(
     readonly viewport: HTMLElement,
     private readonly scene: HTMLElement,
     private readonly reducedMotion: boolean,
-  ) {}
+  ) {
+    super();
+    this.#strip = new Store(this.#measure());
+    this.strip = this.#strip;
+  }
 
-  start(): void {
-    this.viewport.addEventListener("scroll", this.#handleScroll, {
+  protected connect(signal: AbortSignal): void {
+    const { viewport } = this;
+    const win = viewport.ownerDocument.defaultView ?? window;
+    viewport.addEventListener("scroll", this.#handleScroll, {
       passive: true,
+      signal,
     });
-    this.viewport.addEventListener("wheel", this.#handleWheel, {
+    viewport.addEventListener("wheel", this.#handleWheel, {
       passive: false,
+      signal,
     });
-    this.viewport.addEventListener("pointerdown", this.#handleDragStart);
-    this.viewport.addEventListener("click", this.#swallowClickAfterDrag, {
+    viewport.addEventListener("pointerdown", this.#handleDragStart, { signal });
+    viewport.addEventListener("click", this.#swallowClickAfterDrag, {
       capture: true,
+      signal,
     });
-    window.addEventListener("keydown", this.#handleKey);
-    window.addEventListener("resize", this.#handleScroll, { passive: true });
+    win.addEventListener("keydown", this.#handleKey, { signal });
+    win.addEventListener("resize", this.#handleScroll, {
+      passive: true,
+      signal,
+    });
+    signal.addEventListener("abort", () => {
+      cancelAnimationFrame(this.#frame);
+      this.#frame = 0;
+      this.#endDrag();
+    });
     this.#publish();
   }
 
   get scrollLeft(): number {
     return this.viewport.scrollLeft;
-  }
-
-  /** Calls `listener` now and after every scroll, at most once per frame. */
-  onScroll(listener: ScrollListener): void {
-    this.#listeners.push(listener);
-    listener(this.scrollLeft);
   }
 
   /** Scrolls so `element` starts a little in from the left edge. */
@@ -89,10 +117,14 @@ export class WorldScroller {
     });
   };
 
+  #measure(): VisibleStrip {
+    return { left: this.scrollLeft, width: this.viewport.clientWidth };
+  }
+
   #publish(): void {
-    const x = this.scrollLeft;
-    this.scene.style.setProperty("--scroll-x", String(Math.round(x)));
-    for (const listener of this.#listeners) listener(x);
+    const strip = this.#measure();
+    this.scene.style.setProperty("--scroll-x", String(Math.round(strip.left)));
+    this.#strip.set(strip);
   }
 
   /** A vertical wheel moves the world sideways. Horizontal wheels and trackpads already do. */
@@ -108,15 +140,19 @@ export class WorldScroller {
   readonly #handleDragStart = (event: PointerEvent): void => {
     if (!this.enabled || event.pointerType !== "mouse" || event.button !== 0)
       return;
+    const listeners = new AbortController();
     this.#drag = {
       startX: event.clientX,
       startScroll: this.scrollLeft,
       moved: false,
+      listeners,
     };
-    window.addEventListener("pointermove", this.#handleDragMove);
-    window.addEventListener("pointerup", this.#handleDragEnd);
+    const win = this.viewport.ownerDocument.defaultView ?? window;
+    const { signal } = listeners;
+    win.addEventListener("pointermove", this.#handleDragMove, { signal });
+    win.addEventListener("pointerup", this.#handleDragEnd, { signal });
     // A cancelled pointer (native drag and drop, lost focus) never sends pointerup.
-    window.addEventListener("pointercancel", this.#handleDragEnd);
+    win.addEventListener("pointercancel", this.#handleDragEnd, { signal });
   };
 
   readonly #handleDragMove = (event: PointerEvent): void => {
@@ -139,14 +175,20 @@ export class WorldScroller {
   };
 
   readonly #handleDragEnd = (): void => {
-    window.removeEventListener("pointermove", this.#handleDragMove);
-    window.removeEventListener("pointerup", this.#handleDragEnd);
-    window.removeEventListener("pointercancel", this.#handleDragEnd);
+    const drag = this.#drag;
+    drag?.listeners.abort();
     this.viewport.classList.remove("is-dragging");
     // Keep `#drag` until the click that follows the release has been swallowed.
-    if (!this.#drag?.moved) this.#drag = null;
+    if (!drag?.moved) this.#drag = null;
     else setTimeout(() => (this.#drag = null));
   };
+
+  /** Drops any drag at once, e.g. when the scroller is destroyed mid-drag. */
+  #endDrag(): void {
+    this.#drag?.listeners.abort();
+    this.#drag = null;
+    this.viewport.classList.remove("is-dragging");
+  }
 
   /** A drag ends with a click on whatever is under the mouse; it must not open a flower. */
   readonly #swallowClickAfterDrag = (event: MouseEvent): void => {

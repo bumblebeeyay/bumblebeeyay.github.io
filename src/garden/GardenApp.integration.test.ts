@@ -15,7 +15,7 @@ import { SHEET_TITLE_ID } from "../views/ids";
 import { WorldScroller } from "../world/WorldScroller";
 import { GardenApp } from "./GardenApp";
 import { GardenCamera } from "./GardenCamera";
-import { followGoToLinks } from "./goToPlaces";
+import { GoToLinks } from "./GoToLinks";
 import { ListDialog } from "./ListDialog";
 import { ProjectDialog } from "./ProjectDialog";
 import { VisitedProjects } from "./VisitedProjects";
@@ -73,9 +73,18 @@ function setUp({ reducedMotion = true } = {}) {
     reading,
     reducedMotion,
   });
-  app.start();
-  const stopGoTo = followGoToLinks(document, scroller, () => app.isExploring);
-  list.onShowInGarden((id) => void app.visitById(id));
+  list.showRequested.subscribe((id) => void app.visitById(id));
+  // Started and destroyed together, as in `main.ts`.
+  const controllers = [
+    dialog,
+    list,
+    app,
+    new GoToLinks(document, scroller, () => app.isExploring),
+  ];
+  for (const controller of controllers) controller.start();
+  const destroy = () => {
+    for (const controller of controllers) controller.destroy();
+  };
 
   const plot = (id: string): HTMLElement => {
     const element = garden.plots.get(id);
@@ -107,7 +116,7 @@ function setUp({ reducedMotion = true } = {}) {
     setBehaviour,
     sheetTitle,
     endTransitions,
-    stopGoTo,
+    destroy,
     visited,
   };
 }
@@ -138,9 +147,8 @@ describe("GardenApp, wired to the real garden", () => {
   });
 
   afterEach(() => {
-    // ProjectDialog listens on `document` for good: close it, or it answers the next test's keys.
-    world.dialog.element.close();
-    world.stopGoTo();
+    // ProjectDialog listens on `document`: destroying it keeps it from answering the next test's keys.
+    world.destroy();
     document.documentElement.classList.remove("is-reading");
   });
 
@@ -161,7 +169,7 @@ describe("GardenApp, wired to the real garden", () => {
           ?.classList.contains("is-bloomed"),
       ).toBe(true);
       await vi.waitFor(
-        () => expect(world.visited.ids.has("a")).toBe(true),
+        () => expect(world.visited.ids.value.has("a")).toBe(true),
         SLOW_MACHINE,
       );
     });
@@ -192,12 +200,11 @@ describe("GardenApp, wired to the real garden", () => {
       world.plot("b").click();
       await openedVisit(world);
       expect(world.sheetTitle()).toBe("Title a");
-      expect(world.visited.ids.has("b")).toBe(false);
+      expect(world.visited.ids.value.has("b")).toBe(false);
     });
 
     it("flies the bee to the flower first, unless motion is reduced", async () => {
-      world.dialog.element.close();
-      world.stopGoTo();
+      world.destroy();
       world = setUp({ reducedMotion: false });
       const flyTo = vi.spyOn(world.bee, "flyTo").mockResolvedValue();
       world.plot("a").click();
@@ -222,7 +229,7 @@ describe("GardenApp, wired to the real garden", () => {
     it("shows the next project with the right arrow, and counts it as visited", () => {
       world.press("ArrowRight");
       expect(world.sheetTitle()).toBe("Title b");
-      expect(world.visited.ids.has("b")).toBe(true);
+      expect(world.visited.ids.value.has("b")).toBe(true);
     });
 
     it("crosses into the next area", () => {
