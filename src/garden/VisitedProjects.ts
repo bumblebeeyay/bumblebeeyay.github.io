@@ -29,10 +29,6 @@ export class VisitedProjects {
     return this.knownIds.size;
   }
 
-  has(id: string): boolean {
-    return this.#ids.has(id);
-  }
-
   add(id: string): void {
     if (!this.knownIds.has(id) || this.#ids.has(id)) return;
     this.#ids.add(id);

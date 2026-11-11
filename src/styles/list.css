@@ -11,7 +11,7 @@
 }
 
 .list-dialog::backdrop {
-  background: rgb(20 30 15 / 55%);
+  background: var(--scrim-list);
 }
 
 .list-dialog__head {
@@ -32,8 +32,8 @@
 
 .list-dialog__close {
   --ink: var(--engraving);
-  --pill-bg: #fff8e6;
-  --pill-border: #7a4a22;
+  --pill-bg: var(--paper-pill-bg);
+  --pill-border: var(--paper-pill-border);
 }
 
 .list-dialog__area h3 {
@@ -44,14 +44,14 @@
   font-weight: 700;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #1d6b3f;
+  color: var(--paper-title);
 }
 
 .list-dialog__area h3 span {
   font-weight: 600;
   letter-spacing: 0;
   text-transform: none;
-  color: #5e4a33;
+  color: var(--paper-ink-soft);
 }
 
 .list-dialog__area ul {
@@ -77,7 +77,8 @@
   border-radius: 50%;
 }
 
-.list-dialog__project p {
+/* `:where` keeps this reset at the weight of a bare `p`, so classes below can set margins. */
+:where(.list-dialog__project) p {
   margin: 0;
 }
 
@@ -86,9 +87,9 @@
 }
 
 .list-dialog__description {
-  margin: 4px 0 8px !important;
+  margin: 4px 0 8px;
   line-height: 1.5;
-  color: #4a3a28;
+  color: var(--paper-ink-body);
 }
 
 .list-dialog__links {
@@ -100,7 +101,7 @@
 }
 
 .list-dialog__links a {
-  color: #1d6b3f;
+  color: var(--paper-title);
   text-underline-offset: 3px;
 }
 
@@ -109,7 +110,7 @@
   padding: 0;
   border: 0;
   background: none;
-  color: #8a4b10;
+  color: var(--rust);
   font-weight: 600;
   text-decoration: underline dashed;
   text-underline-offset: 3px;

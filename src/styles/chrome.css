@@ -64,7 +64,7 @@ button.pill:hover {
 
 /* honey jar */
 .honey-jar__glass {
-  fill: rgb(255 243 214 / 70%);
+  fill: var(--jar-glass);
 }
 
 .honey-jar__honey {
@@ -81,7 +81,7 @@ button.pill:hover {
 }
 
 .honey-jar__lid {
-  fill: #c9853a;
+  fill: var(--jar-lid);
   stroke: var(--pill-border);
   stroke-width: 2.5;
 }
@@ -145,15 +145,15 @@ button.pill:hover {
 }
 
 .garden-map__stop--meadow .garden-map__dot {
-  background: #9fcd7a;
+  background: var(--map-meadow);
 }
 
 .garden-map__stop--greenhouse .garden-map__dot {
-  background: #d7ece6;
+  background: var(--map-greenhouse);
 }
 
 .garden-map__stop--wild .garden-map__dot {
-  background: #c9a36b;
+  background: var(--map-wild);
 }
 
 .garden-map__stop[aria-current] .garden-map__dot {

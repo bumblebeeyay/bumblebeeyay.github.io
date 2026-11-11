@@ -1,32 +1,15 @@
 import { h } from "../dom/create";
-import type { PlantedProject } from "../domain/parseGarden";
+import type { PlantedProject } from "../domain/garden";
 import type { FlowerSpec, ProjectLink } from "../domain/types";
 import { renderFlower, setBloomed } from "../flower/renderFlower";
+import { SHEET_TITLE_ID } from "./ids";
+import { externalLink } from "./links";
 
-export const SHEET_TITLE_ID = "herbarium-title";
-
-const ROMAN_MONTHS = [
-  "I",
-  "II",
-  "III",
-  "IV",
-  "V",
-  "VI",
-  "VII",
-  "VIII",
-  "IX",
-  "X",
-  "XI",
-  "XII",
-];
+/** Specimen numbers have at least two digits, like "03". */
+const padNumber = (n: number): string => String(n).padStart(2, "0");
 
 /** "No. 03" */
-export const specimenNumber = (n: number): string =>
-  `No. ${String(n).padStart(2, "0")}`;
-
-/** "11 · XI · 2026", the way dates are written on old herbarium labels. */
-export const herbariumDate = (date: Date): string =>
-  `${date.getDate()} · ${ROMAN_MONTHS[date.getMonth()] ?? ""} · ${date.getFullYear()}`;
+export const specimenNumber = (n: number): string => `No. ${padNumber(n)}`;
 
 function bloomedFlower(spec: FlowerSpec, className: string): SVGSVGElement {
   const flower = renderFlower(spec);
@@ -42,14 +25,9 @@ function renderLink(link: ProjectLink, flower: FlowerSpec): HTMLElement {
   return h(
     "li",
     {},
-    h(
-      "a",
-      {
-        class: "seed-packet",
-        href: link.href,
-        target: "_blank",
-        rel: "noopener noreferrer",
-      },
+    externalLink(
+      link.href,
+      { class: "seed-packet" },
       bloomedFlower(flower, "seed-packet__flower"),
       h(
         "span",
@@ -80,12 +58,7 @@ function renderSpecimen(
       "dl",
       { class: "specimen-label" },
       h("div", { class: "specimen-label__head" }, `Herbarium Apis · ${brand}`),
-      h(
-        "div",
-        {},
-        h("dt", {}, "No."),
-        h("dd", {}, String(number).padStart(2, "0")),
-      ),
+      h("div", {}, h("dt", {}, "No."), h("dd", {}, padNumber(number))),
       h(
         "div",
         {},
@@ -106,7 +79,6 @@ function renderSpecimen(
 export function renderHerbariumSheet(
   entry: PlantedProject,
   brand: string,
-  visitedOn: Date,
 ): HTMLElement {
   const { project, area, number } = entry;
   return h(
@@ -140,7 +112,6 @@ export function renderHerbariumSheet(
         "p",
         { class: "visited-stamp" },
         h("span", { class: "visited-stamp__word" }, "Visited"),
-        h("span", { class: "visited-stamp__date" }, herbariumDate(visitedOn)),
       ),
     ),
   );

@@ -1,15 +1,14 @@
-import { add, vec2 } from "../core/vec2";
+import { add, vec2 } from "../util/vec2";
 import type { Bee } from "../bee/Bee";
 import type { BeeBehaviour } from "../bee/behaviours";
 import { viewportCenter } from "../dom/geometry";
 import { nextPaint } from "../dom/transition";
-import type { PlantedProject } from "../domain/parseGarden";
+import type { PlantedProject } from "../domain/garden";
 import {
   FLOWER_HEAD_SELECTOR,
   FLOWER_SELECTOR,
   setBloomed,
 } from "../flower/renderFlower";
-import { NEXT_AREA_ATTRIBUTE } from "../views/hive";
 import { PLOT_SELECTOR, PROJECT_ID_ATTRIBUTE } from "../views/plot";
 import type { WorldScroller } from "../world/WorldScroller";
 import type { GardenCamera } from "./GardenCamera";
@@ -23,6 +22,8 @@ export interface GardenAppDependencies {
   readonly scroller: WorldScroller;
   /** In walking order, left to right. */
   readonly projects: ReadonlyMap<string, PlantedProject>;
+  /** The plot of each project, by project id. */
+  readonly plots: ReadonlyMap<string, HTMLElement>;
   readonly bee: Bee;
   readonly camera: GardenCamera;
   readonly dialog: ProjectDialog;
@@ -63,7 +64,6 @@ export class GardenApp {
       "click",
       this.#handlePlotClick,
     );
-    document.addEventListener("click", this.#handleGoToClick);
     this.deps.dialog.onRequestClose(() => void this.leave());
     this.deps.dialog.onNavigate((direction) => this.step(direction));
   }
@@ -75,7 +75,7 @@ export class GardenApp {
 
     const { bee, camera, dialog, scroller, visited } = this.deps;
     scroller.enabled = false;
-    this.#setBloomed(plot, true);
+    this.#bloom(plot);
 
     const head = plot.querySelector(FLOWER_HEAD_SELECTOR);
     if (head && !this.deps.reducedMotion) {
@@ -101,8 +101,11 @@ export class GardenApp {
   /** Flips to the previous or next sheet, wrapping around the garden. */
   step(direction: Direction): void {
     if (this.#state.phase !== "reading") return;
+    const { length } = this.#order;
     const index = this.#order.indexOf(this.#state.projectId);
-    const id = this.#order.at((index + direction) % this.#order.length);
+    if (index === -1) return;
+    // `+ length` keeps the index positive when stepping back from the first sheet.
+    const id = this.#order[(index + direction + length) % length];
     const entry = id === undefined ? undefined : this.deps.projects.get(id);
     if (!entry) return;
 
@@ -124,7 +127,7 @@ export class GardenApp {
     // Come back where the last sheet's flower grows, which may not be where the visit began.
     const plot = this.#plotOf(projectId);
     if (plot) {
-      this.#setBloomed(plot, true);
+      this.#bloom(plot);
       scroller.centerOn(plot, { instant: true });
       plot.focus({ preventScroll: true });
     }
@@ -137,30 +140,18 @@ export class GardenApp {
     if (plot) void this.visit(plot);
   };
 
-  /** Signposts, the map and the hive's button all lead somewhere in the garden. */
-  readonly #handleGoToClick = (event: MouseEvent): void => {
-    const button = (event.target as Element).closest(
-      `[${NEXT_AREA_ATTRIBUTE}]`,
-    );
-    const id = button?.getAttribute(NEXT_AREA_ATTRIBUTE);
-    const place = id ? document.getElementById(id) : null;
-    if (place && this.#state.phase === "exploring")
-      this.deps.scroller.scrollToElement(place);
-  };
-
   #projectOf(plot: HTMLElement): PlantedProject | undefined {
     const id = plot.getAttribute(PROJECT_ID_ATTRIBUTE);
     return id === null ? undefined : this.deps.projects.get(id);
   }
 
-  #plotOf(projectId: string): HTMLElement | null {
-    return this.deps.scroller.viewport.querySelector<HTMLElement>(
-      `[${PROJECT_ID_ATTRIBUTE}="${CSS.escape(projectId)}"]`,
-    );
+  #plotOf(projectId: string): HTMLElement | undefined {
+    return this.deps.plots.get(projectId);
   }
 
-  #setBloomed(plot: HTMLElement, bloomed: boolean): void {
+  /** Visited flowers stay open, even after the pointer leaves them. */
+  #bloom(plot: HTMLElement): void {
     const flower = plot.querySelector(FLOWER_SELECTOR);
-    if (flower) setBloomed(flower, bloomed);
+    if (flower) setBloomed(flower, true);
   }
 }

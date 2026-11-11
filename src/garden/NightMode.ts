@@ -1,6 +1,19 @@
 type Listener = (night: boolean) => void;
 
 /**
+ * Tints the browser's own interface (the address bar on phones) with the sky.
+ * The color is read from the current theme's `--sky-mid` token, so it is never written twice.
+ * Call it after the theme changed.
+ */
+export function syncThemeColor(doc: Document = document): void {
+  const meta = doc.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+  const sky = getComputedStyle(doc.documentElement)
+    .getPropertyValue("--sky-mid")
+    .trim();
+  if (meta && sky) meta.content = sky;
+}
+
+/**
  * Day or night, shown as `data-theme` on the root element for the stylesheets.
  * Starts from the visitor's clock; the switch then wins for the rest of the visit.
  */

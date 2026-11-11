@@ -2,19 +2,22 @@ import { svg } from "../dom/create";
 import type { FlowerSpec } from "../domain/types";
 import { PETAL_SHAPES, petalAngles } from "./petalShapes";
 
-/** The flower is drawn in a 110 × 190 box; its head is centered here. */
-const HEAD = { x: 55, y: 60 } as const;
+/** The box every flower is drawn in. */
+const BOX = { width: 110, height: 190 } as const;
+/** Where the head is centered: horizontally in the middle of the box. */
+const HEAD = { x: BOX.width / 2, y: 60 } as const;
 
 const BLOOMED_CLASS = "is-bloomed";
 export const FLOWER_SELECTOR = ".flower";
 export const FLOWER_HEAD_SELECTOR = ".flower__anchor";
 
+/** The stalk rises from the middle of the ground to just under the head. Leaves are drawn for this box. */
 function renderStem(): SVGGElement {
   return svg(
     "g",
     { class: "flower__stem" },
     svg("path", {
-      d: `M55 190C50 150 62 110 ${HEAD.x} ${HEAD.y + 10}`,
+      d: `M${HEAD.x} ${BOX.height}C50 150 62 110 ${HEAD.x} ${HEAD.y + 10}`,
       class: "flower__stalk",
     }),
     svg("path", {
@@ -75,7 +78,7 @@ export function renderFlower(spec: FlowerSpec): SVGSVGElement {
     "svg",
     {
       class: "flower",
-      viewBox: "0 0 110 190",
+      viewBox: `0 0 ${BOX.width} ${BOX.height}`,
       "aria-hidden": "true",
       style: `--petal: ${spec.petal}; --outline: ${spec.outline}; --core: ${spec.core}`,
     },

@@ -1,5 +1,9 @@
 const DRAG_THRESHOLD_PX = 6;
 const LINE_HEIGHT_PX = 40;
+/** Arrow keys walk about a third of the screen: the next plot comes into view, the last one stays. */
+const ARROW_STEP = 0.35;
+/** Page keys walk almost a whole screen, keeping a strip of the old one for context. */
+const PAGE_STEP = 0.85;
 
 type ScrollListener = (scrollLeft: number) => void;
 
@@ -110,7 +114,9 @@ export class WorldScroller {
       moved: false,
     };
     window.addEventListener("pointermove", this.#handleDragMove);
-    window.addEventListener("pointerup", this.#handleDragEnd, { once: true });
+    window.addEventListener("pointerup", this.#handleDragEnd);
+    // A cancelled pointer (native drag and drop, lost focus) never sends pointerup.
+    window.addEventListener("pointercancel", this.#handleDragEnd);
   };
 
   readonly #handleDragMove = (event: PointerEvent): void => {
@@ -121,6 +127,9 @@ export class WorldScroller {
     if (!drag.moved) {
       drag.moved = true;
       this.viewport.classList.add("is-dragging");
+      // Keep receiving the pointer even if it leaves the window mid-drag.
+      // Only from here on, so a plain click still reaches the plot under it.
+      this.viewport.setPointerCapture(event.pointerId);
     }
     // `instant` so the world sticks to the hand instead of easing after it.
     this.viewport.scrollTo({
@@ -131,6 +140,8 @@ export class WorldScroller {
 
   readonly #handleDragEnd = (): void => {
     window.removeEventListener("pointermove", this.#handleDragMove);
+    window.removeEventListener("pointerup", this.#handleDragEnd);
+    window.removeEventListener("pointercancel", this.#handleDragEnd);
     this.viewport.classList.remove("is-dragging");
     // Keep `#drag` until the click that follows the release has been swallowed.
     if (!this.#drag?.moved) this.#drag = null;
@@ -158,12 +169,12 @@ export class WorldScroller {
 
     const width = this.viewport.clientWidth;
     const steps: Partial<Record<string, number>> = {
-      ArrowRight: width * 0.35,
-      ArrowDown: width * 0.35,
-      ArrowLeft: -width * 0.35,
-      ArrowUp: -width * 0.35,
-      PageDown: width * 0.85,
-      PageUp: -width * 0.85,
+      ArrowRight: width * ARROW_STEP,
+      ArrowDown: width * ARROW_STEP,
+      ArrowLeft: -width * ARROW_STEP,
+      ArrowUp: -width * ARROW_STEP,
+      PageDown: width * PAGE_STEP,
+      PageUp: -width * PAGE_STEP,
     };
     const step = steps[event.key];
 

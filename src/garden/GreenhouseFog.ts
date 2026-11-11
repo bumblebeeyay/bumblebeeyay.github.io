@@ -1,3 +1,5 @@
+import { GREENHOUSE_PANE_SELECTOR } from "../views/area";
+
 const WIPED_CLASS = "is-wiped";
 
 /**
@@ -5,13 +7,19 @@ const WIPED_CLASS = "is-wiped";
  * like a hand on cold glass. Panes do not catch the pointer (the plots behind
  * must stay clickable), so the pane under it is found from coordinates.
  * Keyboard focus on a plot clears the panes in front of it.
+ *
+ * Measuring panes forces layout, so pointer moves are handled at most once per frame,
+ * and panes already wiped are never measured again.
  */
 export class GreenhouseFog {
-  readonly #panes: HTMLElement[];
+  /** Panes still fogged. Wiped panes stay clear, so they leave this list for good. */
+  #fogged: HTMLElement[];
+  /** The latest pointer position waiting for the next frame, if any. */
+  #pendingPointer: { readonly x: number; readonly y: number } | null = null;
 
   constructor(private readonly greenhouse: HTMLElement) {
-    this.#panes = [
-      ...greenhouse.querySelectorAll<HTMLElement>(".greenhouse__pane"),
+    this.#fogged = [
+      ...greenhouse.querySelectorAll<HTMLElement>(GREENHOUSE_PANE_SELECTOR),
     ];
   }
 
@@ -26,7 +34,15 @@ export class GreenhouseFog {
   }
 
   readonly #handlePointer = (event: PointerEvent): void => {
-    this.#wipeWhere((rect) => contains(rect, event.clientX, event.clientY));
+    if (this.#fogged.length === 0) return;
+    const alreadyScheduled = this.#pendingPointer !== null;
+    this.#pendingPointer = { x: event.clientX, y: event.clientY };
+    if (alreadyScheduled) return;
+    requestAnimationFrame(() => {
+      const point = this.#pendingPointer;
+      this.#pendingPointer = null;
+      if (point) this.#wipeWhere((rect) => contains(rect, point.x, point.y));
+    });
   };
 
   readonly #handleFocus = (event: FocusEvent): void => {
@@ -36,14 +52,11 @@ export class GreenhouseFog {
   };
 
   #wipeWhere(test: (rect: DOMRect) => boolean): void {
-    for (const pane of this.#panes) {
-      if (
-        !pane.classList.contains(WIPED_CLASS) &&
-        test(pane.getBoundingClientRect())
-      ) {
-        pane.classList.add(WIPED_CLASS);
-      }
-    }
+    this.#fogged = this.#fogged.filter((pane) => {
+      if (!test(pane.getBoundingClientRect())) return true;
+      pane.classList.add(WIPED_CLASS);
+      return false;
+    });
   }
 }
 

@@ -1,10 +1,8 @@
 import { h, svg } from "../dom/create";
 import type { WelcomeContent } from "../domain/types";
 import { arrowRightIcon } from "./icons";
-
-export const HIVE_ID = "hive";
-/** Marks the button that flies on to the first area. */
-export const NEXT_AREA_ATTRIBUTE = "data-go-to";
+import { HIVE_ID, WELCOME_TITLE_ID } from "./ids";
+import { goTo } from "./navigation";
 
 /** A straw skep on its wooden stool. */
 function renderSkep(): SVGSVGElement {
@@ -57,23 +55,19 @@ export function renderHive(
 ): HTMLElement {
   return h(
     "section",
-    { class: "hive", id: HIVE_ID, "aria-labelledby": "welcome-title" },
+    { class: "hive", id: HIVE_ID, "aria-labelledby": WELCOME_TITLE_ID },
     renderFlightTrail(),
     renderSkep(),
     h(
       "div",
       { class: "hive__welcome" },
       h("p", { class: "hive__kicker" }, welcome.kicker),
-      h("h1", { class: "hive__title", id: "welcome-title" }, welcome.title),
+      h("h1", { class: "hive__title", id: WELCOME_TITLE_ID }, welcome.title),
       h("p", { class: "hive__subtitle" }, welcome.subtitle),
       firstAreaId !== undefined &&
         h(
           "button",
-          {
-            type: "button",
-            class: "honey-button",
-            [NEXT_AREA_ATTRIBUTE]: firstAreaId,
-          },
+          { type: "button", class: "honey-button", ...goTo(firstAreaId) },
           welcome.cta,
           arrowRightIcon(),
         ),

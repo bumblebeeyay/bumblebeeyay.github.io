@@ -3,38 +3,38 @@ import "./styles/index.css";
 import { Bee } from "./bee/Bee";
 import { Circling, FollowPointer } from "./bee/behaviours";
 import { renderBee } from "./bee/renderBee";
-import { startLoop } from "./core/loop";
-import { canHover, isNightAt, prefersReducedMotion } from "./core/media";
-import { vec2 } from "./core/vec2";
+import { startLoop } from "./dom/loop";
+import { canHover, prefersReducedMotion } from "./dom/media";
+import { isNightAt } from "./util/time";
+import { vec2 } from "./util/vec2";
 import rawGarden from "./data/garden.json";
 import { h } from "./dom/create";
-import { indexProjects, parseGarden } from "./domain/parseGarden";
+import { indexProjects } from "./domain/garden";
+import { parseGarden } from "./domain/parseGarden";
 import { bloomOnView } from "./garden/bloomOnView";
 import { GardenApp } from "./garden/GardenApp";
 import { GardenCamera } from "./garden/GardenCamera";
+import { followGoToLinks } from "./garden/goToPlaces";
 import { GreenhouseFog } from "./garden/GreenhouseFog";
 import { ListDialog } from "./garden/ListDialog";
-import { NightMode } from "./garden/NightMode";
+import { NightMode, syncThemeColor } from "./garden/NightMode";
 import { ProjectDialog } from "./garden/ProjectDialog";
 import { VisitedProjects } from "./garden/VisitedProjects";
 import { PointerTracker } from "./input/PointerTracker";
-import { renderGarden } from "./views/garden";
+import { placeAt, renderGarden } from "./views/garden";
 import { renderGardenMap } from "./views/gardenMap";
-import {
-  PLOT_SELECTOR,
-  PROJECT_ID_ATTRIBUTE,
-  setPlotVisited,
-} from "./views/plot";
+import { PAGE_IDS } from "./views/ids";
+import { setPlotVisited } from "./views/plot";
 import { renderTopbar } from "./views/topbar";
 import { WorldScroller } from "./world/WorldScroller";
 
 /** Composition root: the only place that knows every piece and wires them together. */
 function main(root: HTMLElement): void {
-  const content = parseGarden(rawGarden);
+  const content = parseGarden(rawGarden, { reservedIds: PAGE_IDS });
   const projects = indexProjects(content.areas);
   const reducedMotion = prefersReducedMotion();
 
-  const { scene, viewport, places } = renderGarden(content);
+  const { scene, viewport, places, plots, greenhouses } = renderGarden(content);
   const topbar = renderTopbar(content.brand);
   const map = renderGardenMap(content.areas);
   const dialog = new ProjectDialog(content.brand);
@@ -53,34 +53,29 @@ function main(root: HTMLElement): void {
   const scroller = new WorldScroller(viewport, scene, reducedMotion);
   scroller.start();
   scroller.onScroll((x) => {
-    const middle = x + viewport.clientWidth / 2;
-    const here =
-      places.filter((place) => place.offsetLeft <= middle).at(-1) ?? places[0];
+    const here = placeAt(places, x + viewport.clientWidth / 2);
     if (here) map.setCurrent(here.id);
   });
 
   // Day and night
   const night = new NightMode(isNightAt(new Date()));
-  night.subscribe((isNight) => topbar.setNight(isNight));
+  night.subscribe((isNight) => {
+    topbar.setNight(isNight);
+    syncThemeColor();
+  });
   topbar.nightButton.addEventListener("click", () => night.toggle());
 
   // Visited flowers and the honey jar
   const visited = new VisitedProjects(new Set(projects.keys()));
-  const plots = [...viewport.querySelectorAll<HTMLElement>(PLOT_SELECTOR)];
   visited.subscribe((ids) => {
     topbar.setVisited(ids.size, visited.total);
-    for (const plot of plots) {
-      const id = plot.getAttribute(PROJECT_ID_ATTRIBUTE) ?? "";
-      const title = projects.get(id)?.project.title ?? "";
-      setPlotVisited(plot, title, ids.has(id));
+    for (const [id, plot] of plots) {
+      const entry = projects.get(id);
+      if (entry) setPlotVisited(plot, entry.project, ids.has(id));
     }
   });
 
-  for (const greenhouse of viewport.querySelectorAll<HTMLElement>(
-    ".greenhouse",
-  )) {
-    new GreenhouseFog(greenhouse).start();
-  }
+  for (const greenhouse of greenhouses) new GreenhouseFog(greenhouse).start();
 
   // The bee
   const idleSpot = () => vec2(innerWidth * 0.62, innerHeight * 0.3);
@@ -90,12 +85,14 @@ function main(root: HTMLElement): void {
       radius: vec2(60, 40),
       speed: 0.02,
       periodMs: 8800,
+      fallbackCenter: idleSpot(),
     }),
   );
   const reading = new Circling(() => dialog.flowerHeadPosition, {
     radius: vec2(50, 16),
     speed: 0.05,
     periodMs: 4400,
+    fallbackCenter: idleSpot(),
   });
   const bee = new Bee(beeElement, idleSpot(), exploring);
   startLoop((dt, time) => bee.update(dt, time));
@@ -103,6 +100,7 @@ function main(root: HTMLElement): void {
   const app = new GardenApp({
     scroller,
     projects,
+    plots,
     bee,
     camera: new GardenCamera(scene, [topbar.element, map.element]),
     dialog,
@@ -112,9 +110,12 @@ function main(root: HTMLElement): void {
     reducedMotion,
   });
   app.start();
+  followGoToLinks(document, scroller, () => app.isExploring);
 
   // The list view, for visitors in a hurry
   topbar.listButton.addEventListener("click", () => {
+    // The top bar only turns inert once the camera zooms; until then a visit may be underway.
+    if (!app.isExploring) return;
     scroller.enabled = false;
     list.open();
   });
@@ -123,7 +124,7 @@ function main(root: HTMLElement): void {
   });
   list.onShowInGarden((id) => void app.visitById(id));
 
-  if (!canHover()) bloomOnView(plots);
+  if (!canHover()) bloomOnView(plots.values());
 }
 
 const root = document.querySelector<HTMLElement>("#app");

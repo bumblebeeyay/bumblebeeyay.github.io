@@ -1,11 +1,13 @@
 import { h, svg } from "../dom/create";
-import { HIVE_ID, NEXT_AREA_ATTRIBUTE } from "./hive";
 import { listIcon, moonIcon, sunIcon } from "./icons";
+import { HIVE_ID, JAR_CLIP_ID } from "./ids";
+import { goTo } from "./navigation";
 
 const JAR_PATH =
   "M6 10h22v4c3 2 4 5 4 9v9c0 4-3 6-7 6H9c-4 0-7-2-7-6v-9c0-4 1-7 4-9z";
-/** Inside height of the jar, from its bottom (y = 38) to its neck (y = 12). */
+/** Where the honey starts: the inside bottom of the jar, in its viewBox. */
 const JAR_BOTTOM = 38;
+/** How high the honey can rise: from the bottom (y = 38) to the neck (y = 12). */
 const JAR_DEPTH = 26;
 
 export interface Topbar {
@@ -38,10 +40,10 @@ export function renderTopbar(brand: string): Topbar {
     svg(
       "defs",
       {},
-      svg("clipPath", { id: "jar-inside" }, svg("path", { d: JAR_PATH })),
+      svg("clipPath", { id: JAR_CLIP_ID }, svg("path", { d: JAR_PATH })),
     ),
     svg("path", { class: "honey-jar__glass", d: JAR_PATH }),
-    svg("g", { "clip-path": "url(#jar-inside)" }, honey),
+    svg("g", { "clip-path": `url(#${JAR_CLIP_ID})` }, honey),
     svg("path", { class: "honey-jar__outline", d: JAR_PATH }),
     svg("rect", {
       class: "honey-jar__lid",
@@ -78,7 +80,7 @@ export function renderTopbar(brand: string): Topbar {
       {
         type: "button",
         class: "topbar__brand",
-        [NEXT_AREA_ATTRIBUTE]: HIVE_ID,
+        ...goTo(HIVE_ID),
       },
       brand,
     ),

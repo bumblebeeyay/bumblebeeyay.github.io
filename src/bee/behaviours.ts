@@ -1,4 +1,4 @@
-import { add, vec2, type Vec2 } from "../core/vec2";
+import { add, vec2, type Vec2 } from "../util/vec2";
 import type { PointerSource } from "../input/PointerTracker";
 
 /**
@@ -32,6 +32,8 @@ export interface CirclingOptions {
   readonly radius: Vec2;
   /** Duration of one loop. */
   readonly periodMs: number;
+  /** Where to circle while `center` has no answer yet, e.g. before the sheet is shown. */
+  readonly fallbackCenter: Vec2;
 }
 
 /** Drifts in lazy loops around a (possibly moving) point. */
@@ -45,7 +47,7 @@ export class Circling implements BeeBehaviour {
     private readonly options: CirclingOptions,
   ) {
     this.speed = options.speed;
-    this.#lastCenter = center() ?? vec2(innerWidth / 2, innerHeight / 2);
+    this.#lastCenter = center() ?? options.fallbackCenter;
   }
 
   targetAt(timeMs: number): Vec2 {

@@ -9,7 +9,9 @@ export function startLoop(onFrame: FrameCallback): () => void {
   let handle = 0;
 
   const frame = (time: number): void => {
-    onFrame(Math.min(time - last, MAX_FRAME_MS), time);
+    // The first frame's timestamp can be slightly earlier than `performance.now()`
+    // read at start, which would give a negative duration: never go below 0.
+    onFrame(Math.min(Math.max(time - last, 0), MAX_FRAME_MS), time);
     last = time;
     handle = requestAnimationFrame(frame);
   };

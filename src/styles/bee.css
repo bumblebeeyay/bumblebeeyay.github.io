@@ -16,37 +16,37 @@
 }
 
 .bee__body {
-  fill: #f6c343;
-  stroke: #2b1d0e;
+  fill: var(--bee-body);
+  stroke: var(--bee-ink);
   stroke-width: 3;
 }
 
 .bee__stripe {
   fill: none;
-  stroke: #2b1d0e;
+  stroke: var(--bee-ink);
   stroke-width: 5;
   stroke-linecap: round;
 }
 
 .bee__ink {
-  fill: #2b1d0e;
+  fill: var(--bee-ink);
 }
 
 .bee__cheek {
-  fill: #ff8fb8;
+  fill: var(--bee-cheek);
   opacity: 0.8;
 }
 
 .bee__antennae {
   fill: none;
-  stroke: #2b1d0e;
+  stroke: var(--bee-ink);
   stroke-width: 2;
   stroke-linecap: round;
 }
 
 .bee__wing {
-  fill: #e6f6ff;
-  stroke: #2b1d0e;
+  fill: var(--bee-wing);
+  stroke: var(--bee-ink);
   stroke-width: 2.5;
   opacity: 0.9;
   transform-box: fill-box;
@@ -72,14 +72,14 @@
 .bee__lantern-string,
 .bee__lantern-cap {
   fill: none;
-  stroke: #2b1d0e;
+  stroke: var(--bee-ink);
   stroke-width: 2;
   stroke-linecap: round;
 }
 
 .bee__lantern-glass {
-  fill: #ffe28a;
-  stroke: #2b1d0e;
+  fill: var(--lantern);
+  stroke: var(--bee-ink);
   stroke-width: 2;
 }
 
@@ -96,7 +96,7 @@
   height: 360px;
   margin: -150px 0 0 -180px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgb(255 215 106 / 26%), transparent 65%);
+  background: radial-gradient(circle, var(--lantern-halo), transparent 65%);
   opacity: 0;
   transition: opacity 0.8s;
 }

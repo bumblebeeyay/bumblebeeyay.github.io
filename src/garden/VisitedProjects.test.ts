@@ -15,7 +15,7 @@ describe("VisitedProjects", () => {
   it("remembers visits across instances", () => {
     const store = memoryStore();
     new VisitedProjects(known, store).add("a");
-    expect(new VisitedProjects(known, store).has("a")).toBe(true);
+    expect(new VisitedProjects(known, store).ids.has("a")).toBe(true);
   });
 
   it("ignores unknown and malformed stored ids", () => {
@@ -31,7 +31,7 @@ describe("VisitedProjects", () => {
   it("works without storage", () => {
     const visited = new VisitedProjects(known, null);
     visited.add("b");
-    expect(visited.has("b")).toBe(true);
+    expect(visited.ids.has("b")).toBe(true);
   });
 
   it("notifies subscribers once per new visit", () => {

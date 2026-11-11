@@ -59,11 +59,12 @@ html.is-reading .scene {
   bottom: 40%;
   opacity: 0;
   background:
-    radial-gradient(circle, #fff 0 1.5px, transparent 2px) 0 0 / 230px 170px,
-    radial-gradient(circle, #fff 0 1px, transparent 1.5px) 90px 60px / 310px
-      130px,
-    radial-gradient(circle, rgb(255 255 255 / 70%) 0 1px, transparent 1.5px)
-      40px 110px / 170px 210px;
+    radial-gradient(circle, var(--star) 0 1.5px, transparent 2px) 0 0 / 230px
+      170px,
+    radial-gradient(circle, var(--star) 0 1px, transparent 1.5px) 90px 60px /
+      310px 130px,
+    radial-gradient(circle, var(--star-dim) 0 1px, transparent 1.5px) 40px
+      110px / 170px 210px;
   background-position-x: calc(var(--scroll-x) * -0.03px);
   transition: opacity 0.8s;
 }
@@ -121,22 +122,22 @@ html.is-reading .scene {
   background:
     radial-gradient(
         circle,
-        #f4ffb0 0 2px,
-        rgb(233 255 143 / 45%) 3px,
+        var(--firefly) 0 2px,
+        var(--firefly-glow) 3px,
         transparent 9px
       )
       0 0 / 520px 260px,
     radial-gradient(
         circle,
-        #f4ffb0 0 2px,
-        rgb(233 255 143 / 45%) 3px,
+        var(--firefly) 0 2px,
+        var(--firefly-glow) 3px,
         transparent 9px
       )
       210px 120px / 680px 300px,
     radial-gradient(
         circle,
-        #f4ffb0 0 1.5px,
-        rgb(233 255 143 / 40%) 2.5px,
+        var(--firefly) 0 1.5px,
+        var(--firefly-glow-faint) 2.5px,
         transparent 7px
       )
       400px 40px / 430px 220px;

@@ -1,4 +1,4 @@
-import { vec2, type Vec2 } from "../core/vec2";
+import { vec2, type Vec2 } from "../util/vec2";
 
 /** Center of an element, in viewport coordinates. */
 export function viewportCenter(element: Element): Vec2 {

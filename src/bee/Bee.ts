@@ -1,10 +1,18 @@
-import { approach, clamp } from "../core/math";
-import { distance, sub, type Vec2 } from "../core/vec2";
+import { approach, clamp } from "../util/math";
+import { distance, sub, vec2, type Vec2 } from "../util/vec2";
 import { FlyTo, type BeeBehaviour } from "./behaviours";
 
 /** How close counts as "arrived", in pixels. */
 const ARRIVAL_RADIUS = 12;
 const MAX_TILT_DEG = 25;
+/**
+ * Degrees of tilt per pixel moved this frame. The bee leans into its flight,
+ * mostly from horizontal speed; climbing or diving only adds a little.
+ */
+const TILT_PER_PX_X = 2.2;
+const TILT_PER_PX_Y = 0.6;
+/** Below this horizontal speed (px per frame) the bee keeps its facing, so it does not flicker while hovering. */
+const TURN_THRESHOLD_PX = 0.25;
 const BOB_AMPLITUDE_PX = 4;
 const BOB_PERIOD_MS = 1760;
 
@@ -34,7 +42,7 @@ export class Bee {
     this.#position = start;
     this.#behaviour = behaviour;
     const { width, height } = element.getBoundingClientRect();
-    this.#halfSize = { x: width / 2, y: height / 2 };
+    this.#halfSize = vec2(width / 2, height / 2);
   }
 
   setBehaviour(behaviour: BeeBehaviour): void {
@@ -58,7 +66,8 @@ export class Bee {
     const velocity = sub(next, this.#position);
     this.#position = next;
 
-    if (Math.abs(velocity.x) > 0.25) this.#facing = velocity.x < 0 ? -1 : 1;
+    if (Math.abs(velocity.x) > TURN_THRESHOLD_PX)
+      this.#facing = velocity.x < 0 ? -1 : 1;
     this.#render(velocity, timeMs);
 
     if (
@@ -71,7 +80,7 @@ export class Bee {
 
   #render(velocity: Vec2, timeMs: number): void {
     const tilt = clamp(
-      velocity.x * 2.2 + velocity.y * 0.6,
+      velocity.x * TILT_PER_PX_X + velocity.y * TILT_PER_PX_Y,
       -MAX_TILT_DEG,
       MAX_TILT_DEG,
     );

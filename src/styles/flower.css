@@ -13,14 +13,14 @@
 
 .flower__stalk {
   fill: none;
-  stroke: #3a8c3d;
+  stroke: var(--stalk);
   stroke-width: 5;
   stroke-linecap: round;
 }
 
 .flower__leaf,
 .flower__sepal {
-  fill: #2f8f5a;
+  fill: var(--sepal);
 }
 
 .flower__bud-petal,
@@ -32,7 +32,7 @@
 
 .flower__core {
   fill: var(--core);
-  stroke: #d99a1e;
+  stroke: var(--core-edge);
   stroke-width: 2;
 }
 
@@ -85,7 +85,7 @@
 }
 
 :root[data-theme="night"] .plot.is-visited .flower {
-  filter: drop-shadow(0 0 10px rgb(255 226 138 / 45%));
+  filter: drop-shadow(0 0 10px var(--night-bloom-glow));
 }
 
 @media (width <= 720px) {

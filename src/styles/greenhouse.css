@@ -78,9 +78,9 @@
   position: absolute;
   inset: auto -12px -26px;
   height: 22px;
-  border: 2.5px solid #7d6a4f;
+  border: 2.5px solid var(--footing-edge);
   border-radius: 4px;
-  background: #b9a68a;
+  background: var(--footing);
 }
 
 :root[data-theme="night"] .greenhouse__footing {

@@ -1,52 +1,23 @@
-# Logs
-logs
-*.log
-npm-debug.log*
-
-# Dependency and package-manager directories
+# Dependencies
 node_modules/
-.npm
+
+# Build, tool caches and test output
+dist/
 .vite/
-
-# Build and package outputs
+coverage/
 *.tsbuildinfo
-*.tgz
-dist
 .eslintcache
-.cache
-.vscode-test
 
-# Native compiler outputs
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-*.wasm
-*.test
-__debug_bin*
-*.out
+# Logs
+*.log
 
-# Environment and editor files
+# Environment
 .env
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*.local
 .env.local
-.node_repl_history
-**/.vscode/*
-!**/.vscode/tasks.json
-!**/.vscode/settings.template.json
-!**/.vscode/launch.template.json
-!**/.vscode/extensions.json
+
+# Editors and OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
 .DS_Store
-.idea
-
-# Local compiler baselines and test output
-tsc/testdata/baselines/local
-tsc/testdata/baselines/tmp
-
-# Legacy Strada build and test output
-/.node_modules/
-/build.json
-/lib/

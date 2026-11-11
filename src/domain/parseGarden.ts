@@ -60,12 +60,30 @@ function readColor(value: unknown, path: string): string {
   return text;
 }
 
-const SAFE_URL = /^(?:https?:\/\/|mailto:|\/|\.{0,2}\/|#)/i;
+const SAFE_URL = /^(?:https?:\/\/|mailto:|\.{0,2}\/|#)/i;
 
 function readUrl(value: unknown, path: string): string {
   const text = readText(value, path);
   if (!SAFE_URL.test(text))
     throw new ContentError(path, "expected an http(s), mailto or relative URL");
+  return text;
+}
+
+/**
+ * Lowercase words joined by single hyphens, e.g. `public-meadow`.
+ * Ids end up as element ids and in selectors, so spaces or quotes would break them.
+ * A slug never contains "--": the page derives its own ids with it (see `views/ids.ts`),
+ * so a derived id can never clash with a content id.
+ */
+const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+function readId(value: unknown, path: string): string {
+  const text = readText(value, path);
+  if (!SLUG.test(text))
+    throw new ContentError(
+      path,
+      `expected a slug like "my-project" (lowercase letters, digits and single hyphens), got "${text}"`,
+    );
   return text;
 }
 
@@ -84,6 +102,7 @@ const readFlower: Reader<FlowerSpec> = (value, path) => {
 const readLink: Reader<ProjectLink> = (value, path) => {
   const o = readObject(value, path);
   const label = readText(o.label, `${path}.label`);
+  // No `href: undefined` key, for the same reason as `note` in `readArea`.
   return o.href === undefined
     ? { label }
     : { label, href: readUrl(o.href, `${path}.href`) };
@@ -92,7 +111,7 @@ const readLink: Reader<ProjectLink> = (value, path) => {
 const readProject: Reader<Project> = (value, path) => {
   const o = readObject(value, path);
   return {
-    id: readText(o.id, `${path}.id`),
+    id: readId(o.id, `${path}.id`),
     title: readText(o.title, `${path}.title`),
     summary: readText(o.summary, `${path}.summary`),
     description: readText(o.description, `${path}.description`),
@@ -104,11 +123,12 @@ const readProject: Reader<Project> = (value, path) => {
 
 const readArea: Reader<Area> = (value, path) => {
   const o = readObject(value, path);
+  // Spread only when present: with `exactOptionalPropertyTypes`, `note: undefined` is not allowed.
   const note =
     o.note === undefined ? {} : { note: readText(o.note, `${path}.note`) };
   return {
     ...note,
-    id: readText(o.id, `${path}.id`),
+    id: readId(o.id, `${path}.id`),
     title: readText(o.title, `${path}.title`),
     tagline: readText(o.tagline, `${path}.tagline`),
     setting: readOneOf(o.setting, `${path}.setting`, SETTING_IDS),
@@ -127,9 +147,15 @@ const readWelcome: Reader<WelcomeContent> = (value, path) => {
   };
 };
 
-function assertUniqueIds(areas: readonly Area[]): void {
+function assertUniqueIds(
+  areas: readonly Area[],
+  reservedIds: readonly string[],
+): void {
+  const reserved = new Set(reservedIds);
   const seen = new Set<string>();
   const check = (id: string, path: string): void => {
+    if (reserved.has(id))
+      throw new ContentError(path, `id "${id}" is reserved by the page`);
     if (seen.has(id))
       throw new ContentError(path, `id "${id}" is used more than once`);
     seen.add(id);
@@ -142,40 +168,29 @@ function assertUniqueIds(areas: readonly Area[]): void {
   });
 }
 
+export interface ParseOptions {
+  /**
+   * Ids the page already uses for its own elements. Area ids become element ids,
+   * so content may not take these. Injected so the domain does not depend on the views.
+   */
+  readonly reservedIds?: readonly string[];
+}
+
 /**
  * Checks raw JSON and returns typed garden content.
  * Errors point at the exact field, e.g. `garden.json › areas[0].projects[2].flower.shape`.
  */
-export function parseGarden(raw: unknown): GardenContent {
+export function parseGarden(
+  raw: unknown,
+  { reservedIds = [] }: ParseOptions = {},
+): GardenContent {
   const o = readObject(raw, "root");
   const areas = readList(o.areas, "areas", readArea);
-  assertUniqueIds(areas);
+  assertUniqueIds(areas, reservedIds);
   return {
     brand: readText(o.brand, "brand"),
     welcome: readWelcome(o.welcome, "welcome"),
     areas,
     footer: readText(o.footer, "footer"),
   };
-}
-
-/** A project together with the area it grows in and its place in the walk. */
-export interface PlantedProject {
-  readonly project: Project;
-  readonly area: Area;
-  /** 1-based position in the whole garden, left to right. */
-  readonly number: number;
-}
-
-/** All projects of the garden, by id, in walking order. */
-export function indexProjects(
-  areas: readonly Area[],
-): ReadonlyMap<string, PlantedProject> {
-  const all = areas.flatMap((area) =>
-    area.projects.map((project) => ({ project, area })),
-  );
-  return new Map(
-    all.map(
-      (entry, i) => [entry.project.id, { ...entry, number: i + 1 }] as const,
-    ),
-  );
 }

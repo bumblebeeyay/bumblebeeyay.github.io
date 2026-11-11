@@ -1,10 +1,13 @@
 import { h } from "../dom/create";
-import type { Area, Project, ProjectLink } from "../domain/types";
+import type { Area } from "../domain/types";
 import { closeIcon } from "../views/icons";
+import { LIST_TITLE_ID } from "../views/ids";
+import { renderProjectList, showProjectId } from "../views/list";
 
 /**
  * Every project as a plain list, for visitors in a hurry.
  * A modal dialog: the browser keeps focus inside and Escape closes it.
+ * The list itself is drawn by `views/list.ts`; this class only owns the dialog's behaviour.
  */
 export class ListDialog {
   readonly element: HTMLDialogElement;
@@ -20,25 +23,22 @@ export class ListDialog {
     );
     this.element = h(
       "dialog",
-      { class: "list-dialog", "aria-labelledby": "list-title" },
+      { class: "list-dialog", "aria-labelledby": LIST_TITLE_ID },
       h(
         "div",
         { class: "list-dialog__head" },
         h(
           "h2",
-          { id: "list-title", class: "list-dialog__title" },
+          { id: LIST_TITLE_ID, class: "list-dialog__title" },
           "All projects",
         ),
         closeButton,
       ),
-      ...areas.map((area) => this.#renderArea(area)),
+      ...renderProjectList(areas),
     );
     closeButton.addEventListener("click", () => this.element.close());
     this.element.addEventListener("close", () => this.#onClose());
-    // A click on the dimmed backdrop lands on the dialog element itself.
-    this.element.addEventListener("click", (event) => {
-      if (event.target === this.element) this.element.close();
-    });
+    this.element.addEventListener("click", this.#handleClick);
   }
 
   onShowInGarden(handler: (projectId: string) => void): void {
@@ -53,68 +53,15 @@ export class ListDialog {
     this.element.showModal();
   }
 
-  #renderArea(area: Area): HTMLElement {
-    return h(
-      "section",
-      { class: "list-dialog__area", "aria-labelledby": `list-${area.id}` },
-      h(
-        "h3",
-        { id: `list-${area.id}` },
-        area.title,
-        h("span", {}, ` · ${area.tagline}`),
-      ),
-      h(
-        "ul",
-        {},
-        ...area.projects.map((project) => this.#renderProject(project)),
-      ),
-    );
-  }
-
-  #renderProject(project: Project): HTMLElement {
-    const show = h(
-      "button",
-      { type: "button", class: "list-dialog__show" },
-      "See its flower",
-    );
-    show.addEventListener("click", () => {
+  readonly #handleClick = (event: MouseEvent): void => {
+    // A click on the dimmed backdrop lands on the dialog element itself.
+    if (event.target === this.element) {
       this.element.close();
-      this.#onShowInGarden(project.id);
-    });
-    return h(
-      "li",
-      { class: "list-dialog__project" },
-      h("span", {
-        class: "list-dialog__dot",
-        style: `background: ${project.flower.petal}; border-color: ${project.flower.outline}`,
-      }),
-      h(
-        "div",
-        {},
-        h(
-          "p",
-          { class: "list-dialog__name" },
-          h("strong", {}, project.title),
-          ` · ${project.summary}`,
-        ),
-        h("p", { class: "list-dialog__description" }, project.description),
-        h(
-          "p",
-          { class: "list-dialog__links" },
-          ...project.links.map(renderLink),
-          show,
-        ),
-      ),
-    );
-  }
-}
-
-function renderLink(link: ProjectLink): HTMLElement {
-  return link.href === undefined
-    ? h("span", {}, link.label)
-    : h(
-        "a",
-        { href: link.href, target: "_blank", rel: "noopener noreferrer" },
-        link.label,
-      );
+      return;
+    }
+    const projectId = showProjectId(event.target);
+    if (projectId === null) return;
+    this.element.close();
+    this.#onShowInGarden(projectId);
+  };
 }

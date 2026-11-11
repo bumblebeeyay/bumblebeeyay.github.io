@@ -1,6 +1,7 @@
 import { h } from "../dom/create";
 import type { Area } from "../domain/types";
-import { HIVE_ID, NEXT_AREA_ATTRIBUTE } from "./hive";
+import { HIVE_ID } from "./ids";
+import { goTo } from "./navigation";
 
 export interface GardenMap {
   readonly element: HTMLElement;
@@ -30,7 +31,7 @@ export function renderGardenMap(areas: readonly Area[]): GardenMap {
       {
         type: "button",
         class: `garden-map__stop garden-map__stop--${stop.setting}`,
-        [NEXT_AREA_ATTRIBUTE]: stop.id,
+        ...goTo(stop.id),
       },
       h("span", { class: "garden-map__dot", "aria-hidden": "true" }),
       h("span", { class: "garden-map__label" }, stop.label),

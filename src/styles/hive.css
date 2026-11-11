@@ -92,7 +92,7 @@
 }
 
 .skep__stool rect {
-  fill: #9a6535;
+  fill: var(--skep-stool);
   stroke: var(--wood-edge);
   stroke-width: 3;
 }
@@ -104,7 +104,7 @@
 }
 
 .skep__door {
-  fill: #3b2412;
+  fill: var(--skep-door);
 }
 
 :root[data-theme="night"] .skep {

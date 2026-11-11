@@ -1,10 +1,11 @@
-import type { Vec2 } from "../core/vec2";
+import type { Vec2 } from "../util/vec2";
 import { h } from "../dom/create";
 import { viewportCenter } from "../dom/geometry";
 import { nextPaint, waitForTransition } from "../dom/transition";
-import type { PlantedProject } from "../domain/parseGarden";
+import type { PlantedProject } from "../domain/garden";
 import { FLOWER_HEAD_SELECTOR } from "../flower/renderFlower";
-import { renderHerbariumSheet, SHEET_TITLE_ID } from "../views/herbarium";
+import { renderHerbariumSheet } from "../views/herbarium";
+import { SHEET_TITLE_ID } from "../views/ids";
 import { chevronLeftIcon, chevronRightIcon, closeIcon } from "../views/icons";
 
 const VISIBLE_CLASS = "is-visible";
@@ -102,9 +103,7 @@ export class ProjectDialog {
 
   /** Puts another project on the sheet, without closing. */
   show(entry: PlantedProject): void {
-    this.#sheet.replaceChildren(
-      renderHerbariumSheet(entry, this.brand, new Date()),
-    );
+    this.#sheet.replaceChildren(renderHerbariumSheet(entry, this.brand));
     this.#sheet.scrollTop = 0;
   }
 

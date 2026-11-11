@@ -1,4 +1,4 @@
-import { seededRandom } from "../core/random";
+import { seededRandom } from "../util/random";
 import { h } from "../dom/create";
 
 /** Width of one tile of front grass; it repeats seamlessly. */

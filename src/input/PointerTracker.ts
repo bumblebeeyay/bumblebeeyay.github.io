@@ -1,4 +1,4 @@
-import { vec2, type Vec2 } from "../core/vec2";
+import { vec2, type Vec2 } from "../util/vec2";
 
 /** Anything that knows where the pointer is. `null` until the pointer has moved. */
 export interface PointerSource {

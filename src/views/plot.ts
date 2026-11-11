@@ -1,4 +1,4 @@
-import { hashString } from "../core/random";
+import { hashString } from "../util/random";
 import { h } from "../dom/create";
 import type { Project } from "../domain/types";
 import { renderFlower } from "../flower/renderFlower";
@@ -9,6 +9,13 @@ export const PROJECT_ID_ATTRIBUTE = "data-project-id";
 export const PLOT_SELECTOR = `[${PROJECT_ID_ATTRIBUTE}]`;
 
 const VISITED_CLASS = "is-visited";
+
+/** Flowers grow from 92% to just under 117% of their size, so a row never looks printed. */
+const MIN_GROWTH = 0.92;
+const GROWTH_RANGE = 0.25;
+/** The scale for one project: seeded by its id, so it is the same on every visit. */
+const growthOf = (projectId: string): number =>
+  MIN_GROWTH + ((hashString(projectId) % 100) / 100) * GROWTH_RANGE;
 
 /** A small engraved label on a stake, like the ones naming plants in botanical gardens. */
 function renderPlantLabel(project: Project): HTMLSpanElement {
@@ -26,12 +33,15 @@ function renderPlantLabel(project: Project): HTMLSpanElement {
   );
 }
 
+/** What a screen reader announces for a plot. Shared by the first render and every visit. */
+export const plotLabel = (project: Project, visited: boolean): string =>
+  `${project.title}${visited ? ", visited" : ""}: open the project page`;
+
 /**
  * One project in the garden: its label and its flower. The whole plot is one button.
  * Each flower grows to its own height, so the row looks planted, not printed.
  */
 export function renderPlot(project: Project): HTMLButtonElement {
-  const growth = 0.92 + (hashString(project.id) % 100) / 400;
   return h(
     "button",
     {
@@ -39,8 +49,8 @@ export function renderPlot(project: Project): HTMLButtonElement {
       class: "plot",
       [PROJECT_ID_ATTRIBUTE]: project.id,
       "aria-haspopup": "dialog",
-      "aria-label": `${project.title}: open the project page`,
-      style: `--growth: ${growth.toFixed(3)}`,
+      "aria-label": plotLabel(project, false),
+      style: `--growth: ${growthOf(project.id).toFixed(3)}`,
     },
     renderPlantLabel(project),
     h(
@@ -56,12 +66,9 @@ export function renderPlot(project: Project): HTMLButtonElement {
 
 export function setPlotVisited(
   plot: HTMLElement,
-  title: string,
+  project: Project,
   visited: boolean,
 ): void {
   plot.classList.toggle(VISITED_CLASS, visited);
-  plot.setAttribute(
-    "aria-label",
-    `${title}${visited ? ", visited" : ""}: open the project page`,
-  );
+  plot.setAttribute("aria-label", plotLabel(project, visited));
 }

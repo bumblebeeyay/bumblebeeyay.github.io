@@ -1,8 +1,12 @@
 import { h } from "../dom/create";
 import type { Area } from "../domain/types";
-import { NEXT_AREA_ATTRIBUTE } from "./hive";
 import { lockIcon } from "./icons";
+import { areaTitleId } from "./ids";
+import { goTo } from "./navigation";
 import { renderPlot } from "./plot";
+
+export const GREENHOUSE_SELECTOR = ".greenhouse";
+export const GREENHOUSE_PANE_SELECTOR = ".greenhouse__pane";
 
 /** Panes per plot in the greenhouse wall. */
 const PANES_PER_PLOT = 2;
@@ -27,7 +31,7 @@ function renderSignpost(area: Area, titleId: string): HTMLElement {
 function renderArrowSign(next: Area): HTMLElement {
   return h(
     "button",
-    { type: "button", class: "arrow-sign", [NEXT_AREA_ATTRIBUTE]: next.id },
+    { type: "button", class: "arrow-sign", ...goTo(next.id) },
     h("span", { class: "arrow-sign__post", "aria-hidden": "true" }),
     h(
       "span",
@@ -76,7 +80,7 @@ function renderPlotsRow(area: Area): HTMLElement {
 
 /** One part of the garden: its signpost, its plants, and the way on. */
 export function renderArea(area: Area, next: Area | undefined): HTMLElement {
-  const titleId = `${area.id}-title`;
+  const titleId = areaTitleId(area.id);
   return h(
     "section",
     {

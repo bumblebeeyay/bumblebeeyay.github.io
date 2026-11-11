@@ -84,10 +84,10 @@
   right: -8px;
   display: none;
   padding: 1px 8px;
-  border: 1.5px solid #8a4b10;
+  border: 1.5px solid var(--rust);
   border-radius: 999px;
   background: var(--kraft-light);
-  color: #6b3a0c;
+  color: var(--badge-ink);
   font-size: 11px;
   font-weight: 700;
   transform: rotate(6deg);
@@ -105,7 +105,12 @@
   width: 9px;
   translate: -50% 0;
   border-radius: 2px;
-  background: linear-gradient(90deg, #4e2f14, #7a4f2a 50%, #4e2f14);
+  background: linear-gradient(
+    90deg,
+    var(--stake-dark),
+    var(--stake-light) 50%,
+    var(--stake-dark)
+  );
 }
 
 :root[data-theme="night"] .plant-label {
@@ -118,8 +123,8 @@
   position: absolute;
   width: 18px;
   height: 18px;
-  fill: #fff6b0;
-  stroke: #e0a21a;
+  fill: var(--sparkle);
+  stroke: var(--sparkle-edge);
   stroke-width: 1.5;
   opacity: 0;
   scale: 0.4;
