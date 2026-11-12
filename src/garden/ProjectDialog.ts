@@ -1,86 +1,134 @@
-import { h } from '../dom/create';
-import { viewportCenter } from '../dom/geometry';
-import { nextPaint, waitForTransition } from '../dom/transition';
-import type { Vec2 } from '../core/vec2';
-import type { PlantedProject } from '../domain/parseGarden';
-import { FLOWER_HEAD_SELECTOR, renderFlower, setBloomed } from '../flower/renderFlower';
-import { grassClump } from '../views/grass';
-import { DETAILS_TITLE_ID, renderProjectDetails } from '../views/projectDetails';
+import { Emitter, type Subscribable } from "../util/emitter";
+import type { Vec2 } from "../util/vec2";
+import { Controller } from "../dom/Controller";
+import { h } from "../dom/create";
+import { viewportCenter } from "../dom/geometry";
+import { nextPaint, waitForTransition } from "../dom/transition";
+import type { PlantedProject } from "../domain/garden";
+import { FLOWER_HEAD_SELECTOR } from "../flower/renderFlower";
+import { renderHerbariumSheet } from "../views/herbarium";
+import { SHEET_TITLE_ID } from "../views/ids";
+import { chevronLeftIcon, chevronRightIcon, closeIcon } from "../views/icons";
 
-const VISIBLE_CLASS = 'is-visible';
+const VISIBLE_CLASS = "is-visible";
 const CLOSE_ANIMATION_MS = 500;
 
+export type Direction = -1 | 1;
+
 /**
- * The close-up of one project: its flower in full bloom next to a big sign.
+ * The close-up of one project: a herbarium sheet with its pressed flower and notes.
  * Uses a non-modal <dialog> so the bee can keep flying above it; the garden
  * behind is made inert by the camera, so focus cannot wander there.
  */
-export class ProjectDialog {
+export class ProjectDialog extends Controller {
   readonly element: HTMLDialogElement;
-  readonly #flowerSlot: HTMLElement;
-  readonly #detailsSlot: HTMLElement;
+  readonly #sheet: HTMLElement;
   readonly #closeButton: HTMLButtonElement;
-  #onRequestClose: () => void = () => undefined;
+  readonly #previousButton: HTMLButtonElement;
+  readonly #nextButton: HTMLButtonElement;
 
-  constructor() {
+  readonly #closeRequested = new Emitter();
+  /** The visitor asks to leave: back button, Escape, or a click beside the sheet. */
+  readonly closeRequested: Subscribable<void> = this.#closeRequested;
+
+  readonly #stepRequested = new Emitter<Direction>();
+  /** The visitor asks for the previous or next sheet: buttons or left/right arrow keys. */
+  readonly stepRequested: Subscribable<Direction> = this.#stepRequested;
+
+  constructor(private readonly brand: string) {
+    super();
     this.#closeButton = h(
-      'button',
-      { type: 'button', class: 'project-dialog__close', 'aria-label': 'Back to the garden' },
-      '×',
+      "button",
+      { type: "button", class: "pill herbarium__back" },
+      closeIcon(),
+      h("span", {}, "Back to the garden"),
     );
-    this.#flowerSlot = h('div', { class: 'project-dialog__flower-slot' });
-    this.#detailsSlot = h('div', { class: 'wood-board big-sign__board' });
+    this.#previousButton = h(
+      "button",
+      {
+        type: "button",
+        class: "round-button herbarium__step herbarium__step--previous",
+        "aria-label": "Previous flower",
+      },
+      chevronLeftIcon(),
+    );
+    this.#nextButton = h(
+      "button",
+      {
+        type: "button",
+        class: "round-button herbarium__step herbarium__step--next",
+        "aria-label": "Next flower",
+      },
+      chevronRightIcon(),
+    );
+    this.#sheet = h("article", {
+      class: "sheet",
+      "aria-labelledby": SHEET_TITLE_ID,
+    });
 
     this.element = h(
-      'dialog',
-      { class: 'project-dialog', 'aria-labelledby': DETAILS_TITLE_ID },
+      "dialog",
+      { class: "herbarium", "aria-labelledby": SHEET_TITLE_ID },
       this.#closeButton,
-      h(
-        'div',
-        { class: 'project-dialog__stage' },
-        h('div', { class: 'project-dialog__flower' }, this.#flowerSlot, grassClump('project-dialog__grass')),
-        h(
-          'article',
-          { class: 'big-sign' },
-          h('span', { class: 'wood-post big-sign__post big-sign__post--left' }),
-          h('span', { class: 'wood-post big-sign__post big-sign__post--right' }),
-          this.#detailsSlot,
-          grassClump('big-sign__grass', 'big-sign__grass--left'),
-          grassClump('big-sign__grass', 'big-sign__grass--right'),
-        ),
-      ),
+      this.#previousButton,
+      this.#sheet,
+      this.#nextButton,
     );
-
-    this.#closeButton.addEventListener('click', () => this.#onRequestClose());
-    this.element.addEventListener('click', this.#handleBackdropClick);
-    document.addEventListener('keydown', this.#handleKeydown);
   }
 
-  /** Called when the visitor asks to leave: × button, Escape, or a click beside the sign. */
-  onRequestClose(handler: () => void): void {
-    this.#onRequestClose = handler;
+  protected connect(signal: AbortSignal): void {
+    this.#closeButton.addEventListener(
+      "click",
+      () => this.#closeRequested.emit(),
+      { signal },
+    );
+    this.#previousButton.addEventListener(
+      "click",
+      () => this.#stepRequested.emit(-1),
+      { signal },
+    );
+    this.#nextButton.addEventListener(
+      "click",
+      () => this.#stepRequested.emit(1),
+      { signal },
+    );
+    this.element.addEventListener("click", this.#handleBackdropClick, {
+      signal,
+    });
+    // On the document: the keys must work wherever focus is inside the open sheet.
+    this.element.ownerDocument.addEventListener(
+      "keydown",
+      this.#handleKeydown,
+      {
+        signal,
+      },
+    );
   }
 
   get isOpen(): boolean {
     return this.element.open;
   }
 
-  /** Where the big flower's heart is on screen, or null when closed. */
+  /** Where the pressed flower's heart is on screen, or null when closed. */
   get flowerHeadPosition(): Vec2 | null {
-    const head = this.isOpen ? this.#flowerSlot.querySelector(FLOWER_HEAD_SELECTOR) : null;
+    const head = this.isOpen
+      ? this.#sheet.querySelector(FLOWER_HEAD_SELECTOR)
+      : null;
     return head ? viewportCenter(head) : null;
   }
 
-  async open({ project }: PlantedProject): Promise<void> {
-    const flower = renderFlower(project.flower);
-    setBloomed(flower, true);
-    this.#flowerSlot.replaceChildren(flower);
-    this.#detailsSlot.replaceChildren(renderProjectDetails(project));
-
+  async open(entry: PlantedProject): Promise<void> {
+    this.show(entry);
     this.element.show();
     this.#closeButton.focus({ preventScroll: true });
     await nextPaint();
     this.element.classList.add(VISIBLE_CLASS);
+  }
+
+  /** Puts another project on the sheet, without closing. */
+  show(entry: PlantedProject): void {
+    this.#sheet.replaceChildren(renderHerbariumSheet(entry, this.brand));
+    this.#sheet.scrollTop = 0;
   }
 
   async close(): Promise<void> {
@@ -91,13 +139,18 @@ export class ProjectDialog {
   }
 
   readonly #handleBackdropClick = (event: MouseEvent): void => {
-    const target = event.target as Element;
-    if (!target.closest('.big-sign, .project-dialog__flower, .project-dialog__close')) {
-      this.#onRequestClose();
-    }
+    if (event.target === this.element) this.#closeRequested.emit();
   };
 
   readonly #handleKeydown = (event: KeyboardEvent): void => {
-    if (event.key === 'Escape' && this.isOpen) this.#onRequestClose();
+    if (!this.isOpen || event.defaultPrevented) return;
+    if (event.key === "Escape") {
+      this.#closeRequested.emit();
+    } else if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+      this.#stepRequested.emit(event.key === "ArrowLeft" ? -1 : 1);
+    } else {
+      return;
+    }
+    event.preventDefault();
   };
 }

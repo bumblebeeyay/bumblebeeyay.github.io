@@ -7,12 +7,12 @@ type AttributeValue = string | number | boolean | null | undefined;
 export type Attributes = Readonly<Record<string, AttributeValue>>;
 export type Child = Node | string | number | null | undefined | false;
 
-const SVG_NS = 'http://www.w3.org/2000/svg';
+const SVG_NS = "http://www.w3.org/2000/svg";
 
 function setAttributes(element: Element, attributes: Attributes): void {
   for (const [name, value] of Object.entries(attributes)) {
     if (value === false || value === null || value === undefined) continue;
-    element.setAttribute(name, value === true ? '' : String(value));
+    element.setAttribute(name, value === true ? "" : String(value));
   }
 }
 

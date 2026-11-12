@@ -1,31 +1,36 @@
-const ZOOMED_CLASS = 'is-zoomed';
-const SCROLL_LOCK_CLASS = 'is-scroll-locked';
+const READING_CLASS = "is-reading";
 
-/** Zooms the whole garden toward one element, like a camera, and back. */
+/**
+ * Zooms the whole scene toward one element, like a camera, and back.
+ * While zoomed, the scene and the page's controls are inert, so focus stays on the project.
+ */
 export class GardenCamera {
   constructor(
-    private readonly world: HTMLElement,
-    private readonly zoom = 2.4,
+    private readonly scene: HTMLElement,
+    private readonly controls: readonly HTMLElement[],
+    private readonly zoom = 1.9,
   ) {}
 
   focusOn(target: Element): void {
     const t = target.getBoundingClientRect();
-    const w = this.world.getBoundingClientRect();
-    // Origin slightly right of and above the plot center: the flower, not the label.
-    const originX = t.left + t.width * 0.7 - w.left;
-    const originY = t.top + t.height * 0.3 - w.top;
+    const s = this.scene.getBoundingClientRect();
+    // Aim at the flower, a bit right of and above the plot's center (the label is on the left).
+    const originX = t.left + t.width * 0.7 - s.left;
+    const originY = t.top + t.height * 0.3 - s.top;
 
-    this.world.style.transformOrigin = `${originX}px ${originY}px`;
-    this.world.style.transform = `scale(${this.zoom})`;
-    this.world.classList.add(ZOOMED_CLASS);
-    this.world.inert = true;
-    document.documentElement.classList.add(SCROLL_LOCK_CLASS);
+    this.scene.style.transformOrigin = `${originX}px ${originY}px`;
+    this.scene.style.transform = `scale(${this.zoom})`;
+    this.#setReading(true);
   }
 
   reset(): void {
-    this.world.style.transform = '';
-    this.world.classList.remove(ZOOMED_CLASS);
-    this.world.inert = false;
-    document.documentElement.classList.remove(SCROLL_LOCK_CLASS);
+    this.scene.style.transform = "";
+    this.#setReading(false);
+  }
+
+  #setReading(reading: boolean): void {
+    document.documentElement.classList.toggle(READING_CLASS, reading);
+    for (const element of [this.scene, ...this.controls])
+      element.inert = reading;
   }
 }

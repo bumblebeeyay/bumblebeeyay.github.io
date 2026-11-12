@@ -1,4 +1,4 @@
-import { add, scale, sub, type Vec2 } from './vec2';
+import { add, scale, sub, type Vec2 } from "./vec2";
 
 /** Duration of one frame at 60 fps, the reference all rates are expressed in. */
 const REFERENCE_FRAME_MS = 1000 / 60;
@@ -19,6 +19,11 @@ export function smoothingFactor(rate: number, dtMs: number): number {
 }
 
 /** Moves `current` toward `target` with frame-rate independent exponential easing. */
-export function approach(current: Vec2, target: Vec2, rate: number, dtMs: number): Vec2 {
+export function approach(
+  current: Vec2,
+  target: Vec2,
+  rate: number,
+  dtMs: number,
+): Vec2 {
   return add(current, scale(sub(target, current), smoothingFactor(rate, dtMs)));
 }

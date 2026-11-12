@@ -16,37 +16,37 @@
 }
 
 .bee__body {
-  fill: #f6c343;
-  stroke: #2b1d0e;
+  fill: var(--bee-body);
+  stroke: var(--bee-ink);
   stroke-width: 3;
 }
 
 .bee__stripe {
   fill: none;
-  stroke: #2b1d0e;
+  stroke: var(--bee-ink);
   stroke-width: 5;
   stroke-linecap: round;
 }
 
 .bee__ink {
-  fill: #2b1d0e;
+  fill: var(--bee-ink);
 }
 
 .bee__cheek {
-  fill: #ff8fb8;
+  fill: var(--bee-cheek);
   opacity: 0.8;
 }
 
 .bee__antennae {
   fill: none;
-  stroke: #2b1d0e;
+  stroke: var(--bee-ink);
   stroke-width: 2;
   stroke-linecap: round;
 }
 
 .bee__wing {
-  fill: #e6f6ff;
-  stroke: #2b1d0e;
+  fill: var(--bee-wing);
+  stroke: var(--bee-ink);
   stroke-width: 2.5;
   opacity: 0.9;
   transform-box: fill-box;
@@ -62,4 +62,45 @@
   to {
     transform: scaleY(0.45);
   }
+}
+
+/* At night the bee carries a lantern. */
+.bee__lantern {
+  display: none;
+}
+
+.bee__lantern-string,
+.bee__lantern-cap {
+  fill: none;
+  stroke: var(--bee-ink);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.bee__lantern-glass {
+  fill: var(--lantern);
+  stroke: var(--bee-ink);
+  stroke-width: 2;
+}
+
+:root[data-theme="night"] .bee__lantern {
+  display: inline;
+}
+
+.bee::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 360px;
+  height: 360px;
+  margin: -150px 0 0 -180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--lantern-halo), transparent 65%);
+  opacity: 0;
+  transition: opacity 0.8s;
+}
+
+:root[data-theme="night"] .bee::before {
+  opacity: 1;
 }

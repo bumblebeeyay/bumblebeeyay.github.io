@@ -1,47 +1,156 @@
+/*
+ * Every color of the garden is a token here; night mode only redefines some of them.
+ * Left out on purpose, written where they are used: shadows (translucent black),
+ * light reflections and paper or wood textures (faint white or brown), and the
+ * opaque black of CSS masks, which is not a color but "keep this pixel".
+ */
 :root {
-  /* ground */
-  --grass: #6cc35b;
-  --grass-mid: #55ad4b;
-  --grass-dark: #3f9b4a;
+  /* sky & land (change with night) */
+  --sky-top: #fff1cf;
+  --sky-mid: #ffdc9c;
+  --sky-bottom: #ffc876;
+  --sun: #ffe17f;
+  --sun-halo: rgb(255 244 201 / 70%);
+  --cloud: #fffaf0;
+  --hill-far: #c3dd93;
+  --hill-mid: #9fcd7a;
+  --hill-near: #7cbd60;
+  --grass-back: #6cb554;
+  --grass-front: #58a646;
 
-  /* light wood (signs) */
-  --wood-light: #ebc78f;
-  --wood-mid: #d4a564;
-  --wood-edge: #7a4a22;
-  --post-light: #9a6535;
-  --post-dark: #7d4c22;
-  --post-edge: #5e3716;
+  /* text & controls (change with night) */
+  --ink: #2b1d0e;
+  --ink-soft: #5e3716;
+  --title: #1d6b3f;
+  --pill-bg: #fff8e6;
+  --pill-border: #7a4a22;
+  --current: #1d6b3f;
+  --map-path: #b48a5a;
 
-  /* dark wood (fence) */
-  --fence: #6e3f1c;
-  --fence-dark: #4b2a10;
-  --rail: #804c25;
-  --fence-sign: #5b3417;
-  --fence-sign-trim: #e39b3b;
+  /* greenhouse glass (changes with night) */
+  --frame: #f4f7f2;
+  --fog: rgb(238 246 242 / 74%);
+  --glass-clear: rgb(255 255 255 / 6%);
 
-  /* kraft board (plant labels) */
+  /* wood & paper (the same day and night; they carry their own dark ink) */
+  --engraving: #3b2513;
+  --wood: #d4a564;
+  --wood-edge: #5e3716;
+  --post: #7d4c22;
   --kraft-light: #d3ac72;
   --kraft: #bf9258;
   --kraft-edge: #8a6236;
-  --engraving: #3b2513;
-
-  /* ink & accents */
-  --cream: #f8ecd3;
-  --ink: #1d140b;
-  --title-green: #1d7a47;
+  --paper: #f6efdd;
+  --paper-edge: #d6c8a8;
+  --stamp: #9a3b2a;
   --honey: #f6b93b;
+  --straw: #e9b44c;
+  --straw-edge: #9a6418;
 
-  --font: 'Fraunces', Georgia, serif;
-  --shadow-drop: 0 10px 0 rgb(0 0 0 / 12%);
+  /* the bee */
+  --bee-body: #f6c343;
+  --bee-ink: #2b1d0e;
+  --bee-cheek: #ff8fb8;
+  --bee-wing: #e6f6ff;
+  --lantern: #ffe28a;
+  --lantern-halo: rgb(255 215 106 / 26%);
+
+  /* flowers and plots */
+  --stalk: #3a8c3d;
+  --sepal: #2f8f5a;
+  --core-edge: #d99a1e;
+  --night-bloom-glow: rgb(255 226 138 / 45%);
+  --rust: #8a4b10;
+  --badge-ink: #6b3a0c;
+  --stake-dark: #4e2f14;
+  --stake-light: #7a4f2a;
+  --sparkle: #fff6b0;
+  --sparkle-edge: #e0a21a;
+
+  /* greenhouse and hive */
+  --footing: #b9a68a;
+  --footing-edge: #7d6a4f;
+  --skep-stool: #9a6535;
+  --skep-door: #3b2412;
+
+  /* top bar and map */
+  --jar-glass: rgb(255 243 214 / 70%);
+  --jar-lid: #c9853a;
+  --map-meadow: #9fcd7a;
+  --map-greenhouse: #d7ece6;
+  --map-wild: #c9a36b;
+
+  /* herbarium sheet and list view: paper stays light at night */
+  --paper-title: #1d6b3f;
+  --paper-ink: #2f2418;
+  --paper-ink-body: #4a3a28;
+  --paper-ink-soft: #5e4a33;
+  --paper-pill-bg: #fff8e6;
+  --paper-pill-border: #7a4a22;
+  --label-paper: #fbf6ea;
+  --label-edge: #6b5a45;
+  --tape: rgb(239 226 184 / 80%);
+  --packet: #e2c48f;
+  --packet-green: #cfe0b4;
+  --packet-green-edge: #6f8650;
+  --packet-ink: #6b4a22;
+  --scrim-list: rgb(20 30 15 / 55%);
+  --scrim-sheet: rgb(28 38 18 / 45%);
+
+  /* night lights (only drawn at night) */
+  --star: #fff;
+  --star-dim: rgb(255 255 255 / 70%);
+  --firefly: #f4ffb0;
+  --firefly-glow: rgb(233 255 143 / 45%);
+  --firefly-glow-faint: rgb(233 255 143 / 40%);
+
+  --font: "Fraunces Variable", Georgia, serif;
+  --hand: "Caveat Variable", "Comic Sans MS", cursive;
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-camera: cubic-bezier(0.65, 0, 0.35, 1);
 
-  /* layout */
-  --fence-height: 270px;
+  /* layout: how high above the bottom of the screen the plants stand */
+  --ground: clamp(84px, 18dvh, 180px);
+  /* plants stand a little above the ground line, so the front grass only hides their feet */
+  --planting: calc(var(--ground) + 26px);
+  --topbar-height: 88px;
+
+  /* parallax: set from script, in px */
+  --scroll-x: 0;
+
+  color-scheme: light;
+}
+
+:root[data-theme="night"] {
+  --sky-top: #121a3a;
+  --sky-mid: #25336a;
+  --sky-bottom: #3a4a80;
+  --sun: #f6efd2;
+  --sun-halo: rgb(246 239 210 / 12%);
+  --cloud: rgb(150 165 215 / 22%);
+  --hill-far: #2e4a52;
+  --hill-mid: #26413f;
+  --hill-near: #1e3a30;
+  --grass-back: #1d3a2c;
+  --grass-front: #162e23;
+
+  --ink: #f3ead6;
+  --ink-soft: #d3d7ea;
+  --title: #ffe28a;
+  --pill-bg: #24305a;
+  --pill-border: #8f9fd4;
+  --current: #ffe28a;
+  --map-path: #7f8fc4;
+
+  --frame: #a9b8c0;
+  --fog: rgb(70 90 115 / 62%);
+  --glass-clear: rgb(255 226 138 / 6%);
+
+  color-scheme: dark;
 }
 
 @media (width <= 720px) {
   :root {
-    --fence-height: 230px;
+    --topbar-height: 64px;
   }
 }

@@ -1,0 +1,406 @@
+/*
+ * The project page: a herbarium sheet laid over the zoomed, blurred garden.
+ * A full-screen, non-modal dialog so the bee can keep flying above it.
+ */
+.herbarium {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: 84px 16px 24px;
+  border: 0;
+  background: var(--scrim-sheet);
+  color: var(--engraving);
+  opacity: 0;
+  transition: opacity 0.45s;
+}
+
+.herbarium[open] {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1140px) auto;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(12px, 2vw, 32px);
+}
+
+.herbarium.is-visible {
+  opacity: 1;
+}
+
+.herbarium__back {
+  position: fixed;
+  top: 20px;
+  right: clamp(16px, 3vw, 36px);
+  z-index: 2;
+  font-weight: 700;
+}
+
+/* ---------- the sheet ---------- */
+
+.sheet {
+  max-height: 100%;
+  overflow: auto;
+  padding: clamp(24px, 4vw, 48px) clamp(20px, 4.5vw, 56px);
+  border: 1px solid var(--paper-edge);
+  border-radius: 4px;
+  background:
+    radial-gradient(circle at 20% 10%, rgb(255 255 255 / 50%), transparent 40%),
+    var(--paper);
+  box-shadow: 0 24px 50px rgb(0 0 0 / 35%);
+  color: var(--engraving);
+  transform: rotate(-0.6deg) translateY(16px) scale(0.98);
+  transition: transform 0.5s var(--ease-spring);
+}
+
+.herbarium.is-visible .sheet {
+  transform: rotate(-0.6deg);
+}
+
+.sheet__content {
+  display: grid;
+  grid-template-columns: minmax(220px, 380px) minmax(0, 1fr);
+  gap: clamp(28px, 4vw, 56px);
+}
+
+.sheet__specimen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.sheet__pressed {
+  position: relative;
+  padding: 8px 40px;
+}
+
+.sheet__flower {
+  width: 220px;
+  height: 380px;
+  filter: saturate(0.78) sepia(0.12);
+  transform: rotate(-7deg);
+}
+
+.sheet__tape {
+  position: absolute;
+  width: 78px;
+  height: 22px;
+  background: var(--tape);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 10%);
+}
+
+.sheet__tape--1 {
+  bottom: 70px;
+  left: 50%;
+  rotate: -8deg;
+  translate: -50% 0;
+}
+
+.sheet__tape--2 {
+  top: 200px;
+  left: 34px;
+  rotate: 18deg;
+}
+
+.specimen-label {
+  align-self: flex-end;
+  width: min(100%, 290px);
+  margin: 0;
+  padding: 12px 14px;
+  border: 3px double var(--label-edge);
+  background: var(--label-paper);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.specimen-label > div {
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+}
+
+.specimen-label__head {
+  margin-bottom: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.specimen-label dt {
+  font-weight: 700;
+}
+
+.specimen-label dd {
+  margin: 0;
+}
+
+.specimen-label .handwritten {
+  font-size: 19px;
+  line-height: 1;
+}
+
+/* ---------- notes ---------- */
+
+.sheet__notes {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.sheet__kicker {
+  margin: 0;
+  padding-right: 120px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--paper-title);
+}
+
+.sheet__title {
+  margin: 6px 0 4px;
+  padding-right: 110px;
+  font-size: clamp(36px, 4.4vw, 56px);
+  font-style: italic;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.sheet__summary {
+  margin: 0 0 18px;
+  font-size: 18px;
+  color: var(--paper-ink-soft);
+}
+
+.sheet__description {
+  max-width: 34ch;
+  margin: 0 0 22px;
+  font-size: clamp(23px, 2vw, 28px);
+  line-height: 1.15;
+  color: var(--paper-ink);
+}
+
+.sheet__stamps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 26px;
+  padding: 0;
+  list-style: none;
+}
+
+.sheet__stamps li {
+  padding: 3px 10px;
+  border: 2px solid var(--stamp);
+  border-radius: 4px;
+  color: var(--stamp);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  rotate: -2deg;
+}
+
+.sheet__stamps li:nth-child(even) {
+  rotate: 1.5deg;
+}
+
+.sheet__links {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 22px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sheet__note {
+  padding: 6px 12px;
+  border: 1.5px dashed var(--kraft-edge);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* seed packets */
+.seed-packet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  width: 150px;
+  height: 176px;
+  padding: 0 10px 14px;
+  overflow: hidden;
+  border: 2px solid var(--kraft-edge);
+  border-radius: 3px 3px 6px 6px;
+  background: var(--packet);
+  box-shadow: 0 6px 0 rgb(0 0 0 / 10%);
+  color: var(--engraving);
+  text-decoration: none;
+  rotate: -3deg;
+  transition:
+    rotate 0.3s var(--ease-spring),
+    translate 0.3s var(--ease-spring);
+}
+
+.sheet__links li:nth-child(even) .seed-packet {
+  background: var(--packet-green);
+  border-color: var(--packet-green-edge);
+  rotate: 2deg;
+}
+
+.seed-packet::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 28px;
+  border-bottom: 2px dashed currentColor;
+  background: rgb(0 0 0 / 8%);
+  opacity: 0.6;
+}
+
+.seed-packet:hover,
+.seed-packet:focus-visible {
+  rotate: 0deg;
+  translate: 0 -6px;
+}
+
+.seed-packet__flower {
+  width: 56px;
+  height: 92px;
+  margin-bottom: 2px;
+}
+
+.seed-packet__kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--packet-ink);
+}
+
+.seed-packet__label {
+  font-size: 18px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.1;
+}
+
+.visited-stamp {
+  position: absolute;
+  top: -14px;
+  right: -10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 112px;
+  height: 112px;
+  margin: 0;
+  border: 3px solid color-mix(in srgb, var(--stamp) 75%, transparent);
+  border-radius: 50%;
+  color: color-mix(in srgb, var(--stamp) 90%, transparent);
+  rotate: 14deg;
+}
+
+.visited-stamp__word {
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+@media (width <= 860px) {
+  .herbarium {
+    padding: 76px 12px 84px;
+  }
+
+  .herbarium[open] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .herbarium__step {
+    position: fixed;
+    bottom: 16px;
+    z-index: 2;
+  }
+
+  .herbarium__step--previous {
+    left: 16px;
+  }
+
+  .herbarium__step--next {
+    right: 16px;
+  }
+
+  .sheet,
+  .herbarium.is-visible .sheet {
+    rotate: none;
+  }
+
+  .sheet__content {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sheet__specimen {
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: center;
+    order: 1;
+  }
+
+  .sheet__pressed {
+    padding: 0 8px;
+  }
+
+  .sheet__flower {
+    width: 120px;
+    height: 207px;
+  }
+
+  .sheet__tape--2 {
+    top: 100px;
+    left: 4px;
+  }
+
+  .sheet__tape--1 {
+    bottom: 30px;
+  }
+
+  .specimen-label {
+    align-self: flex-end;
+  }
+
+  .visited-stamp {
+    width: 88px;
+    height: 88px;
+    top: -10px;
+    right: -6px;
+  }
+
+  .visited-stamp__word {
+    font-size: 12px;
+  }
+
+  .sheet__kicker,
+  .sheet__title {
+    padding-right: 84px;
+  }
+}
+
+@media (width <= 480px) {
+  .sheet__specimen {
+    flex-direction: column;
+    align-items: center;
+  }
+}
